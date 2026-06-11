@@ -180,6 +180,47 @@ app.post('/api/users', authenticateToken, (req, res) => {
   });
 });
 
+// Create multiple users in batch
+app.post('/api/users/batch', authenticateToken, (req, res) => {
+  const { users } = req.body || {};
+  if (!Array.isArray(users) || users.length === 0) {
+     return res.status(400).json({ error: 'Users array is required' });
+  }
+  
+  const createdUsers = [];
+  let errors = [];
+  let completed = 0;
+
+  db.serialize(() => {
+    const stmt = db.prepare('INSERT INTO users (username, password, data_limit_gb, expiry_days, expiry_date) VALUES (?, ?, ?, ?, ?)');
+    
+    users.forEach((u) => {
+      const limit = u.data_limit_gb ? parseInt(u.data_limit_gb) : null;
+      const days = u.expiry_days ? parseInt(u.expiry_days) : null;
+      let expiry_date = null;
+      if (days) {
+        const d = new Date();
+        d.setDate(d.getDate() + days);
+        expiry_date = d.toISOString();
+      }
+
+      stmt.run([u.username, u.password, limit, days, expiry_date], function(err) {
+        completed++;
+        if (err) {
+           errors.push({ username: u.username, error: err.message });
+        } else {
+           createdUsers.push({ id: this.lastID, username: u.username, password: u.password });
+        }
+
+        if (completed === users.length) {
+          stmt.finalize();
+          res.json({ created: createdUsers, errors });
+        }
+      });
+    });
+  });
+});
+
 // Delete a user
 app.delete('/api/users/:id', authenticateToken, (req, res) => {
   const id = req.params.id;

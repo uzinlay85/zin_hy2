@@ -16,6 +16,9 @@ function App() {
 
   // Main state
   const [globalPrefix, setGlobalPrefix] = useState('');
+  const [isBatchMode, setIsBatchMode] = useState(false);
+  const [batchCount, setBatchCount] = useState('');
+  const [batchLinks, setBatchLinks] = useState([]);
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
   const generatePassword = () => Math.random().toString(36).slice(-8) + Math.floor(Math.random() * 1000).toString();
@@ -142,6 +145,49 @@ function App() {
 
   const handleAddUser = async (e) => {
     e.preventDefault();
+    
+    if (isBatchMode) {
+      if (!username || !batchCount || parseInt(batchCount) < 1) return;
+      const count = parseInt(batchCount);
+      const usersToCreate = [];
+      for (let i = 1; i <= count; i++) {
+        usersToCreate.push({
+          username: `${globalPrefix}${username}${i}`,
+          password: generatePassword(),
+          data_limit_gb: dataLimit ? parseInt(dataLimit) : null,
+          expiry_days: expiryDays ? parseInt(expiryDays) : null
+        });
+      }
+
+      try {
+        const res = await fetch('/api/users/batch', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ users: usersToCreate })
+        });
+        if (res.status === 401 || res.status === 403) return handleLogout();
+        if (res.ok) {
+          const data = await res.json();
+          const links = data.created.map(u => `hysteria2://${u.username}:${u.password}@${serverDomain}:443/?sni=${serverDomain}&mport=20000-50000#${u.username}`);
+          setBatchLinks(links);
+          setUsername('');
+          setBatchCount('');
+          setDataLimit('');
+          setExpiryDays('');
+          fetchUsers();
+          if (data.errors && data.errors.length > 0) {
+            alert(`Batch created with ${data.errors.length} errors. Some usernames might already exist.`);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to add batch users', err);
+      }
+      return;
+    }
+
     if (!username || !password) return;
 
     const finalUsername = globalPrefix + username;
@@ -344,7 +390,13 @@ function App() {
       </div>
 
       <div className="glass-panel">
-        <h2><Plus size={18} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '8px' }} /> Create New Key</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h2><Plus size={18} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '8px' }} /> Create New {isBatchMode ? 'Keys (Batch)' : 'Key'}</h2>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button className={`btn ${!isBatchMode ? 'btn-primary' : ''}`} onClick={() => setIsBatchMode(false)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>Single</button>
+            <button className={`btn ${isBatchMode ? 'btn-primary' : ''}`} onClick={() => setIsBatchMode(true)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>Batch</button>
+          </div>
+        </div>
         <form onSubmit={handleAddUser} className="form-group">
           <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', overflow: 'hidden' }}>
             {globalPrefix && (
@@ -355,30 +407,44 @@ function App() {
             <input
               type="text"
               className="input-field"
-              placeholder="Username (e.g. meme)"
+              placeholder={isBatchMode ? "Base Username (e.g. vip)" : "Username (e.g. meme)"}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               style={{ border: 'none', background: 'transparent', margin: 0, width: '100%' }}
             />
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          
+          {isBatchMode ? (
             <input
-              type="text"
+              type="number"
               className="input-field"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Number of keys to generate (e.g. 10)"
+              value={batchCount}
+              onChange={(e) => setBatchCount(e.target.value)}
+              min="1"
+              max="100"
             />
-            <button 
-              type="button" 
-              className="btn" 
-              style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.1)' }}
-              onClick={() => setPassword(generatePassword())}
-              title="Generate New Password"
-            >
-              <Dices size={18} />
-            </button>
-          </div>
+          ) : (
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input
+                type="text"
+                className="input-field"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button 
+                type="button" 
+                className="btn" 
+                style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.1)' }}
+                onClick={() => setPassword(generatePassword())}
+                title="Generate New Password"
+              >
+                <Dices size={18} />
+              </button>
+            </div>
+          )}
+
           <input
             type="number"
             className="input-field"
@@ -394,11 +460,28 @@ function App() {
             onChange={(e) => setExpiryDays(e.target.value)}
           />
           <button type="submit" className="btn btn-primary" style={{ gridColumn: '1 / -1' }}>
-            Add Key
+            {isBatchMode ? 'Generate Batch Keys' : 'Add Key'}
           </button>
         </form>
 
-        {newLink && (
+        {batchLinks.length > 0 && isBatchMode && (
+          <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '8px' }}>
+            <div style={{ marginBottom: '0.75rem', color: '#93c5fd', fontSize: '0.9rem', fontWeight: 500, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span><Check size={16} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} /> {batchLinks.length} Keys generated successfully!</span>
+              <button type="button" className="btn btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }} onClick={() => handleCopy(batchLinks.join('\n'), 'batch')}>
+                {copiedId === 'batch' ? <Check size={14} /> : <Copy size={14} />} Copy All Links
+              </button>
+            </div>
+            <textarea
+              readOnly
+              value={batchLinks.join('\n')}
+              className="input-field"
+              style={{ background: 'rgba(15, 23, 42, 0.8)', color: '#cbd5e1', width: '100%', height: '150px', resize: 'vertical', fontFamily: 'monospace', fontSize: '0.85rem', whiteSpace: 'pre' }}
+            />
+          </div>
+        )}
+
+        {newLink && !isBatchMode && (
           <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '8px' }}>
             <p style={{ marginBottom: '0.75rem', color: '#93c5fd', fontSize: '0.9rem', fontWeight: 500 }}>
               <Check size={16} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '4px' }} />
