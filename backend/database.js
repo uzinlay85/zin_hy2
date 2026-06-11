@@ -21,6 +21,18 @@ const db = new sqlite3.Database(dbPath, (err) => {
       status TEXT DEFAULT 'active',
       last_active_time DATETIME DEFAULT NULL
     )`);
+    db.run(`CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )`, () => {
+      // Insert default credentials if they don't exist
+      db.run(`INSERT OR IGNORE INTO settings (key, value) VALUES ('admin_username', 'admin')`);
+      db.run(`INSERT OR IGNORE INTO settings (key, value) VALUES ('admin_password', 'admin')`);
+      // Create a random JWT secret if it doesn't exist
+      const crypto = require('crypto');
+      const secret = crypto.randomBytes(64).toString('hex');
+      db.run(`INSERT OR IGNORE INTO settings (key, value) VALUES ('jwt_secret', ?)`, [secret]);
+    });
     
     // Add columns for existing databases (ignore errors if columns already exist)
     db.run(`ALTER TABLE users ADD COLUMN data_limit_gb INTEGER DEFAULT NULL`, () => {});

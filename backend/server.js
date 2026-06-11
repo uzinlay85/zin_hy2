@@ -1,6 +1,36 @@
 const express = require('express');
 const cors = require('cors');
 const db = require('./database');
+const jwt = require('jsonwebtoken');
+
+// Helper to get settings from database
+const getSetting = (key) => {
+  return new Promise((resolve, reject) => {
+    db.get('SELECT value FROM settings WHERE key = ?', [key], (err, row) => {
+      if (err) reject(err);
+      else resolve(row ? row.value : null);
+    });
+  });
+};
+
+// Middleware to authenticate JWT token
+const authenticateToken = async (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (token == null) return res.sendStatus(401);
+
+  try {
+    const secret = await getSetting('jwt_secret');
+    jwt.verify(token, secret, (err, user) => {
+      if (err) return res.sendStatus(403);
+      req.user = user;
+      next();
+    });
+  } catch (err) {
+    res.sendStatus(500);
+  }
+};
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -50,11 +80,47 @@ app.post('/auth', (req, res) => {
 });
 
 // ==========================================
-// Web UI Management API Endpoints
+// Admin Authentication Endpoints
+// ==========================================
+
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body || {};
+  
+  try {
+    const dbUser = await getSetting('admin_username');
+    const dbPass = await getSetting('admin_password');
+    const secret = await getSetting('jwt_secret');
+    
+    if (username === dbUser && password === dbPass) {
+      const token = jwt.sign({ username }, secret, { expiresIn: '24h' });
+      return res.json({ ok: true, token });
+    }
+    
+    return res.status(401).json({ error: 'Invalid username or password' });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/admin/change-password', authenticateToken, async (req, res) => {
+  const { username, password } = req.body || {};
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password are required' });
+  }
+  
+  db.run('UPDATE settings SET value = ? WHERE key = "admin_username"', [username]);
+  db.run('UPDATE settings SET value = ? WHERE key = "admin_password"', [password], (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ ok: true });
+  });
+});
+
+// ==========================================
+// Web UI Management API Endpoints (Protected)
 // ==========================================
 
 // Get all users
-app.get('/api/users', (req, res) => {
+app.get('/api/users', authenticateToken, (req, res) => {
   db.all('SELECT id, username, password, created_at, data_limit_gb, expiry_days, expiry_date, data_used_bytes, status, last_active_time FROM users ORDER BY created_at DESC', [], (err, rows) => {
     if (err) {
       return res.status(500).json({ error: err.message });
@@ -64,7 +130,7 @@ app.get('/api/users', (req, res) => {
 });
 
 // Create a new user
-app.post('/api/users', (req, res) => {
+app.post('/api/users', authenticateToken, (req, res) => {
   const { username, password, data_limit_gb, expiry_days } = req.body || {};
   
   if (!username || !password) {
@@ -93,7 +159,7 @@ app.post('/api/users', (req, res) => {
 });
 
 // Delete a user
-app.delete('/api/users/:id', (req, res) => {
+app.delete('/api/users/:id', authenticateToken, (req, res) => {
   const id = req.params.id;
   db.run('DELETE FROM users WHERE id = ?', id, function(err) {
     if (err) {

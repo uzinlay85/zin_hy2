@@ -1,7 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Trash2, Copy, Plus, Server, User, Key, Check } from 'lucide-react';
+import { Trash2, Copy, Plus, Server, User, Key, Check, Settings, LogOut, Lock } from 'lucide-react';
 
 function App() {
+  // Auth state
+  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [loginUser, setLoginUser] = useState('');
+  const [loginPass, setLoginPass] = useState('');
+  const [loginError, setLoginError] = useState('');
+
+  // Settings state
+  const [showSettings, setShowSettings] = useState(false);
+  const [newAdminUser, setNewAdminUser] = useState('');
+  const [newAdminPass, setNewAdminPass] = useState('');
+
+  // Main state
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -12,14 +24,72 @@ function App() {
   const serverDomain = 'delux.truehand.top';
 
   useEffect(() => {
-    fetchUsers();
-    const interval = setInterval(fetchUsers, 10000); // refresh every 10s
-    return () => clearInterval(interval);
-  }, []);
+    if (token) {
+      fetchUsers();
+      const interval = setInterval(fetchUsers, 10000); // refresh every 10s
+      return () => clearInterval(interval);
+    }
+  }, [token]);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: loginUser, password: loginPass })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem('token', data.token);
+        setToken(data.token);
+        setLoginError('');
+      } else {
+        setLoginError('Invalid username or password');
+      }
+    } catch (err) {
+      setLoginError('Login failed');
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setToken(null);
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (!newAdminUser || !newAdminPass) return alert('Fill both fields');
+    try {
+      const res = await fetch('/api/admin/change-password', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ username: newAdminUser, password: newAdminPass })
+      });
+      if (res.ok) {
+        alert('Admin credentials changed successfully! Please log in again.');
+        setShowSettings(false);
+        handleLogout();
+      } else {
+        alert('Failed to change credentials');
+      }
+    } catch (err) {
+      alert('Error changing credentials');
+    }
+  };
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('/api/users');
+      const res = await fetch('/api/users', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.status === 401 || res.status === 403) {
+        handleLogout();
+        return;
+      }
       if (res.ok) {
         const data = await res.json();
         setUsers(data);
@@ -36,7 +106,10 @@ function App() {
     try {
       const res = await fetch('/api/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ 
           username, 
           password,
@@ -44,6 +117,7 @@ function App() {
           expiry_days: expiryDays ? parseInt(expiryDays) : null
         })
       });
+      if (res.status === 401 || res.status === 403) return handleLogout();
       if (res.ok) {
         const link = `hysteria2://${username}:${password}@${serverDomain}:443/?sni=${serverDomain}&mport=20000-50000#${username}`;
         setNewLink(link);
@@ -65,8 +139,10 @@ function App() {
     if (!confirm('Are you sure you want to delete this user?')) return;
     try {
       const res = await fetch(`/api/users/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (res.status === 401 || res.status === 403) return handleLogout();
       if (res.ok) {
         fetchUsers();
       }
@@ -109,7 +185,7 @@ function App() {
     if (!lastActiveTime) return false;
     const lastActive = new Date(lastActiveTime + 'Z').getTime();
     const now = new Date().getTime();
-    return (now - lastActive) < 65000; // Online if active within last 65 seconds
+    return (now - lastActive) < 65000;
   };
 
   const formatLastSeen = (lastActiveTime) => {
@@ -123,11 +199,91 @@ function App() {
     return lastActive.toLocaleDateString();
   };
 
+  // Login Screen Render
+  if (!token) {
+    return (
+      <div className="container" style={{ maxWidth: '400px', marginTop: '10vh' }}>
+        <div className="header">
+          <h1>Admin Login</h1>
+          <p>Sign in to manage Hysteria 2</p>
+        </div>
+        <div className="glass-panel">
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <input
+              type="text"
+              className="input-field"
+              placeholder="Username"
+              value={loginUser}
+              onChange={(e) => setLoginUser(e.target.value)}
+              required
+            />
+            <input
+              type="password"
+              className="input-field"
+              placeholder="Password"
+              value={loginPass}
+              onChange={(e) => setLoginPass(e.target.value)}
+              required
+            />
+            {loginError && <p style={{ color: '#ef4444', fontSize: '0.85rem' }}>{loginError}</p>}
+            <button type="submit" className="btn btn-primary" style={{ justifyContent: 'center' }}>
+              <Lock size={18} /> Login
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // Main UI Render
   return (
     <div className="container">
-      <div className="header">
+      {/* Settings Modal */}
+      {showSettings && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', margin: '1rem' }}>
+            <h2>Change Admin Credentials</h2>
+            <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <input
+                type="text"
+                className="input-field"
+                placeholder="New Username"
+                value={newAdminUser}
+                onChange={(e) => setNewAdminUser(e.target.value)}
+                required
+              />
+              <input
+                type="password"
+                className="input-field"
+                placeholder="New Password"
+                value={newAdminPass}
+                onChange={(e) => setNewAdminPass(e.target.value)}
+                required
+              />
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button type="button" className="btn btn-danger" style={{ flex: 1 }} onClick={() => setShowSettings(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <div className="header" style={{ position: 'relative' }}>
         <h1>Hysteria2 Portal</h1>
         <p>Manage your VPN access keys seamlessly</p>
+        <div style={{ position: 'absolute', top: 0, right: 0, display: 'flex', gap: '0.5rem' }}>
+          <button className="copy-btn" onClick={() => setShowSettings(true)} title="Settings" style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.1)' }}>
+            <Settings size={20} />
+          </button>
+          <button className="copy-btn" onClick={handleLogout} title="Logout" style={{ padding: '0.5rem', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444' }}>
+            <LogOut size={20} />
+          </button>
+        </div>
       </div>
 
       <div className="glass-panel">
