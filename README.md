@@ -71,6 +71,14 @@ sudo certbot --nginx -d your-domain.com
 > - **Key Path**: `/etc/letsencrypt/live/your-domain.com/privkey.pem`
 > You will use these exact paths in Step 4 for Hysteria.
 
+**Grant Permissions to the Certificates:**
+Hysteria runs as a non-root user and needs permission to read Let's Encrypt certificates. Run these commands:
+(Hysteria မှ Certificate များကို ဖတ်နိုင်ရန် အောက်ပါ Command များဖြင့် ခွင့်ပြုချက် ပေးပါ)
+```bash
+sudo chmod 0755 /etc/letsencrypt/archive
+sudo chmod 0755 /etc/letsencrypt/live
+```
+
 ### 4. Install Hysteria 2 / Hysteria 2 ကို Install လုပ်ခြင်း
 Now install Hysteria 2 on your VPS:
 (Hysteria 2 ကို အောက်ပါ command ဖြင့် Install လုပ်ပါ)
