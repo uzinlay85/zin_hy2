@@ -21,7 +21,7 @@ function App() {
   const [newLink, setNewLink] = useState('');
   const [dataLimit, setDataLimit] = useState('');
   const [expiryDays, setExpiryDays] = useState('');
-  const serverDomain = 'delux.truehand.top';
+  const serverDomain = window.location.hostname;
 
   useEffect(() => {
     if (token) {
