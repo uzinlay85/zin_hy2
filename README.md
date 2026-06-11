@@ -36,13 +36,15 @@ sudo npm install -g pm2
 
 ### 2. Configure Nginx Reverse Proxy / Nginx ဖြင့် ချိတ်ဆက်ခြင်း
 Create a new Nginx configuration to serve the Web UI on Port 80.
-(Web UI ကို Domain ဖြင့် ခေါ်နိုင်ရန် Nginx တွင် အောက်ပါအတိုင်း ထည့်ပါ)
+(Web UI ကို Domain ဖြင့် ခေါ်နိုင်ရန် Nginx တွင် အောက်ပါ Command ဖြင့် အလွယ်တကူ ထည့်သွင်းပါ)
 
-Edit `/etc/nginx/sites-available/default`:
-```nginx
+> **📝 မှတ်ချက်:** အောက်ပါ Command မှ `your-domain.com` နေရာတွင် မိမိ၏ Domain အမှန်ကို အစားထိုးပြီးမှ Copy ကူးထည့်ပါ။
+
+```bash
+sudo bash -c 'cat << "EOF" > /etc/nginx/sites-available/default
 server {
     listen 80;
-    server_name your-domain.com; # Replace with your exact domain! (သင့် Domain နာမည် ပြောင်းထည့်ပါ)
+    server_name your-domain.com; 
 
     location / {
         proxy_pass http://127.0.0.1:3000;
@@ -52,6 +54,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
+EOF'
 ```
 *Restart Nginx: `sudo systemctl restart nginx`*
 
