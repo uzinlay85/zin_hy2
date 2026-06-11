@@ -239,6 +239,32 @@ pm2 status
 pm2 logs hysteria-ui
 ```
 
+## Server Migration & Backup / ဆာဗာအသစ်သို့ ပြောင်းရွှေ့ခြင်း
+
+If your VPS IP is blocked or throttled, you can easily migrate to a new server without requiring your users to update their VPN keys.
+(ဆာဗာ IP အပိတ်ခံရလျှင် သို့မဟုတ် လိုင်းနှေးသွားလျှင် User များဖုန်းထဲရှိ Key များကို ပြောင်းစရာမလိုဘဲ ဆာဗာအသစ်သို့ အလွယ်တကူ ပြောင်းရွှေ့နိုင်ပါသည်။)
+
+### Method 1: Web UI (Easiest / အလွယ်ဆုံး)
+1. On your **Old Server**, go to the Web UI ⚙️ Settings and click **[ Download Backup ]**. Save the `hysteria_backup.db` file.
+2. Setup your **New Server** completely (Follow Steps 1-8).
+3. On your **New Server**, go to the Web UI ⚙️ Settings, click **[ Upload & Restore ]**, and select your `hysteria_backup.db` file.
+4. Go to Cloudflare and change your domain's DNS A Record to the **New Server IP**.
+5. Wait for DNS to propagate. All users will reconnect automatically!
+
+### Method 2: Command Line (Fallback)
+We also provide a `migration.sh` script to backup and restore the database from the terminal.
+```bash
+# To Backup (Old Server):
+cd ~/zin_hy2
+bash migration.sh backup
+# (Then download the created hysteria_backup.db via SFTP/WinSCP)
+
+# To Restore (New Server):
+# (Upload hysteria_backup.db to ~/zin_hy2 folder)
+cd ~/zin_hy2
+bash migration.sh restore
+```
+
 ---
 
 ## License

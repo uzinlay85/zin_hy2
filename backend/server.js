@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const db = require('./database');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const fs = require('fs');
 
 // Helper to get settings from database
 const getSetting = (key) => {
@@ -315,6 +317,34 @@ app.put('/api/users/:id', authenticateToken, (req, res) => {
 // Serve Frontend Static Files
 // ==========================================
 const path = require('path');
+
+// Backup Database
+app.get('/api/admin/backup', authenticateToken, (req, res) => {
+  const dbPath = path.resolve(__dirname, 'hysteria.db');
+  res.download(dbPath, 'hysteria_backup.db');
+});
+
+// Restore Database
+const upload = multer({ dest: 'uploads/' });
+app.post('/api/admin/restore', authenticateToken, upload.single('database'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+
+  const dbPath = path.resolve(__dirname, 'hysteria.db');
+  
+  try {
+    fs.copyFileSync(req.file.path, dbPath);
+    fs.unlinkSync(req.file.path);
+    
+    res.json({ success: true, message: 'Database restored successfully. Server will restart.' });
+    
+    setTimeout(() => {
+      process.exit(0);
+    }, 1000);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to restore database: ' + err.message });
+  }
+});
+
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 app.use((req, res) => {

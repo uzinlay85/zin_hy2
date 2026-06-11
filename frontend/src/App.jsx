@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trash2, Copy, Plus, Server, User, Key, Check, Settings, LogOut, Lock, Dices, Pause, Play, Edit } from 'lucide-react';
+import { Trash2, Copy, Plus, Server, User, Key, Check, Settings, LogOut, Lock, Dices, Pause, Play, Edit, Download, Upload } from 'lucide-react';
 
 function App() {
   // Auth state
@@ -130,6 +130,56 @@ function App() {
       }
     } catch (err) {
       alert('Error updating prefix');
+    }
+  };
+
+  const handleBackup = async () => {
+    try {
+      const res = await fetch('/api/admin/backup', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.status === 401 || res.status === 403) return handleLogout();
+      if (!res.ok) throw new Error('Backup failed');
+      
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'hysteria_backup.db';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Error downloading backup');
+    }
+  };
+
+  const handleRestore = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (!confirm('WARNING: Restoring will overwrite your current database. Are you sure?')) return;
+
+    const formData = new FormData();
+    formData.append('database', file);
+
+    try {
+      const res = await fetch('/api/admin/restore', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+      if (res.status === 401 || res.status === 403) return handleLogout();
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message);
+        setTimeout(() => window.location.reload(), 2000);
+      } else {
+        alert('Error: ' + data.error);
+      }
+    } catch (err) {
+      alert('Error uploading backup');
     }
   };
 
@@ -436,6 +486,18 @@ function App() {
                 </button>
               </div>
             </form>
+
+            <h2 style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem', marginTop: '1.5rem' }}>Backup & Restore</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1rem' }}>
+              <button type="button" className="btn" onClick={handleBackup} style={{ justifyContent: 'center', background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.5)' }}>
+                <Download size={18} /> Download Backup
+              </button>
+              
+              <label className="btn" style={{ justifyContent: 'center', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.5)', cursor: 'pointer' }}>
+                <Upload size={18} /> Upload & Restore
+                <input type="file" accept=".db" style={{ display: 'none' }} onChange={handleRestore} />
+              </label>
+            </div>
           </div>
         </div>
       )}
