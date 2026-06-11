@@ -118,6 +118,17 @@ server {
 ```
 *Restart Nginx: `sudo systemctl restart nginx`*
 
+### 8. Enable HTTPS with Let's Encrypt (Optional but Recommended) / လုံခြုံရေးအတွက် HTTPS ပြောင်းခြင်း
+To secure your Web UI with HTTPS, install Certbot and let it automatically configure SSL for your Nginx setup:
+(Web UI ကို `https://` ဖြင့် လုံခြုံစွာ သုံးနိုင်ရန် အောက်ပါအတိုင်း Certbot ကို သွင်းပါ)
+
+```bash
+sudo apt install certbot python3-certbot-nginx -y
+sudo certbot --nginx -d your-domain.com
+```
+*(Follow the on-screen prompts. When asked, choose to **redirect** all HTTP traffic to HTTPS).*
+*(Browser တွင် မေးလာပါက HTTP ကို HTTPS သို့ အလိုအလျောက် Redirect လုပ်ရန် ရွေးချယ်ပေးပါ။)*
+
 ---
 
 ## Usage / အသုံးပြုနည်း
