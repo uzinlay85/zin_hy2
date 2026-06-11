@@ -15,7 +15,7 @@ app.use(express.json());
 // Hysteria2 sends a POST request here when a client tries to connect.
 // Payload example: { "addr": "1.2.3.4:56789", "auth": "username:password", "tx": 1234, "rx": 4321 }
 app.post('/auth', (req, res) => {
-  const { auth } = req.body;
+  const { auth } = req.body || {};
   
   if (!auth) {
     return res.json({ ok: false });
@@ -61,7 +61,7 @@ app.get('/api/users', (req, res) => {
 
 // Create a new user
 app.post('/api/users', (req, res) => {
-  const { username, password } = req.body;
+  const { username, password } = req.body || {};
   
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required' });
