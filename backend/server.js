@@ -380,7 +380,7 @@ app.post('/api/admin/restore', authenticateToken, upload.single('database'), (re
 
 app.use(express.static(path.join(__dirname, '../frontend/dist'), { index: false }));
 
-app.get('*', (req, res) => {
+app.use((req, res) => {
   if (req.path === ADMIN_PATH) {
     res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
   } else {
