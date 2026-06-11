@@ -84,7 +84,16 @@ sudo chmod -R 755 /etc/letsencrypt/archive
 sudo chmod -R 755 /etc/letsencrypt/live
 ```
 
-### 4. Install Hysteria 2 / Hysteria 2 ကို Install လုပ်ခြင်း
+### 4. Linux Network Tuning (Speed Optimization) / လိုင်းဆွဲအား ပိုကောင်းစေရန် ပြင်ဆင်ခြင်း
+Hysteria 2 uses QUIC (UDP), which requires larger network buffers for maximum speed. Run these commands to permanently increase your server's UDP buffer sizes:
+(Hysteria 2 ၏ အမြန်နှုန်း အပြည့်အဝရရှိစေရန် UDP Buffer Size များကို အမြဲတမ်း တိုးမြှင့်ပေးမည့် Command များ ဖြစ်ပါသည်)
+```bash
+echo "net.core.rmem_max=8388608" | sudo tee -a /etc/sysctl.conf
+echo "net.core.wmem_max=8388608" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+```
+
+### 5. Install Hysteria 2 / Hysteria 2 ကို Install လုပ်ခြင်း
 Now install Hysteria 2 on your VPS:
 (Hysteria 2 ကို အောက်ပါ command ဖြင့် Install လုပ်ပါ)
 ```bash
@@ -127,7 +136,7 @@ EOF'
 ```
 *Restart Hysteria: `sudo systemctl restart hysteria-server`*
 
-### 5. Configure Firewall & Port Hopping (UFW)
+### 6. Configure Firewall & Port Hopping (UFW)
 Open the necessary ports for Web UI (HTTP/HTTPS) and Hysteria 2 (UDP):
 (Web UI နှင့် Hysteria 2 အလုပ်လုပ်ရန် လိုအပ်သော Port များကို Firewall တွင် ဖွင့်ပေးပါ)
 ```bash
@@ -152,7 +161,7 @@ EOF'
 ```
 *Reload UFW: `sudo ufw reload`*
 
-### 6. Clone Repository & Setup Web UI Backend / Web UI စတင်ခြင်း
+### 7. Clone Repository & Setup Web UI Backend / Web UI စတင်ခြင်း
 (Code များကို Github မှ ဆွဲယူ၍ Backend ကို စတင်ပါ)
 ```bash
 git clone https://github.com/uzinlay85/zin_hy2.git
@@ -165,7 +174,7 @@ pm2 startup
 *(Note: If you are NOT root, `pm2 startup` will output a `sudo env PATH...` command. Copy and run that exact command, then run `pm2 save` again to enable auto-start on reboot. If you are root, it will do it automatically.)*
 *(မှတ်ချက် - pm2 startup လို့ ရိုက်လိုက်ရင် ထွက်လာမည့် `sudo env PATH...` စာကြောင်းအရှည်ကြီးကို ကော်ပီကူးပြီး ထပ်ရိုက်ပေးပါ။ ပြီးလျှင် `pm2 save` ကို နောက်တစ်ကြိမ် ထပ်ရိုက်ပေးမှသာ ဆာဗာ Reboot ကျလျှင် အလိုအလျောက် ပြန်ပွင့်မည် ဖြစ်ပါသည်။)*
 
-### 7. Build the Frontend (React) / Frontend ကို Build လုပ်ခြင်း
+### 8. Build the Frontend (React) / Frontend ကို Build လုပ်ခြင်း
 (Web UI ထွက်လာရန်အတွက် Frontend ကို အောက်ပါအတိုင်း Build လုပ်ပေးပါ)
 ```bash
 cd ../frontend
