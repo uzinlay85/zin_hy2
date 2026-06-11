@@ -12,8 +12,10 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [newAdminUser, setNewAdminUser] = useState('');
   const [newAdminPass, setNewAdminPass] = useState('');
+  const [adminPrefixInput, setAdminPrefixInput] = useState('');
 
   // Main state
+  const [globalPrefix, setGlobalPrefix] = useState('');
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
   const generatePassword = () => Math.random().toString(36).slice(-8) + Math.floor(Math.random() * 1000).toString();
@@ -26,11 +28,27 @@ function App() {
 
   useEffect(() => {
     if (token) {
+      fetchSettings();
       fetchUsers();
       const interval = setInterval(fetchUsers, 10000); // refresh every 10s
       return () => clearInterval(interval);
     }
   }, [token]);
+
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch('/api/settings', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setGlobalPrefix(data.username_prefix || '');
+        setAdminPrefixInput(data.username_prefix || '');
+      }
+    } catch (err) {
+      console.error('Failed to fetch settings', err);
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -82,6 +100,28 @@ function App() {
     }
   };
 
+  const handleChangePrefix = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ username_prefix: adminPrefixInput })
+      });
+      if (res.ok) {
+        alert('Username prefix updated successfully!');
+        fetchSettings();
+      } else {
+        alert('Failed to update prefix');
+      }
+    } catch (err) {
+      alert('Error updating prefix');
+    }
+  };
+
   const fetchUsers = async () => {
     try {
       const res = await fetch('/api/users', {
@@ -104,6 +144,8 @@ function App() {
     e.preventDefault();
     if (!username || !password) return;
 
+    const finalUsername = globalPrefix + username;
+
     try {
       const res = await fetch('/api/users', {
         method: 'POST',
@@ -112,7 +154,7 @@ function App() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ 
-          username, 
+          username: finalUsername, 
           password,
           data_limit_gb: dataLimit ? parseInt(dataLimit) : null,
           expiry_days: expiryDays ? parseInt(expiryDays) : null
@@ -120,7 +162,7 @@ function App() {
       });
       if (res.status === 401 || res.status === 403) return handleLogout();
       if (res.ok) {
-        const link = `hysteria2://${username}:${password}@${serverDomain}:443/?sni=${serverDomain}&mport=20000-50000#${username}`;
+        const link = `hysteria2://${finalUsername}:${password}@${serverDomain}:443/?sni=${serverDomain}&mport=20000-50000#${finalUsername}`;
         setNewLink(link);
         setUsername('');
         setPassword(generatePassword());
@@ -242,9 +284,9 @@ function App() {
       {/* Settings Modal */}
       {showSettings && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', margin: '1rem' }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', margin: '1rem', maxHeight: '90vh', overflowY: 'auto' }}>
             <h2>Change Admin Credentials</h2>
-            <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
               <input
                 type="text"
                 className="input-field"
@@ -261,12 +303,26 @@ function App() {
                 onChange={(e) => setNewAdminPass(e.target.value)}
                 required
               />
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <button type="submit" className="btn btn-primary" style={{ justifyContent: 'center' }}>
+                Change Credentials
+              </button>
+            </form>
+
+            <h2 style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem' }}>Username Prefix</h2>
+            <form onSubmit={handleChangePrefix} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <input
+                type="text"
+                className="input-field"
+                placeholder="e.g. ZIN-"
+                value={adminPrefixInput}
+                onChange={(e) => setAdminPrefixInput(e.target.value)}
+              />
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
                 <button type="button" className="btn btn-danger" style={{ flex: 1 }} onClick={() => setShowSettings(false)}>
-                  Cancel
+                  Close
                 </button>
                 <button type="submit" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
-                  Save
+                  Save Prefix
                 </button>
               </div>
             </form>
@@ -290,13 +346,21 @@ function App() {
       <div className="glass-panel">
         <h2><Plus size={18} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '8px' }} /> Create New Key</h2>
         <form onSubmit={handleAddUser} className="form-group">
-          <input
-            type="text"
-            className="input-field"
-            placeholder="Username (e.g. ko_aung)"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
+          <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', overflow: 'hidden' }}>
+            {globalPrefix && (
+              <span style={{ padding: '0.65rem 0.75rem', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', borderRight: '1px solid rgba(255,255,255,0.1)', fontWeight: 'bold' }}>
+                {globalPrefix}
+              </span>
+            )}
+            <input
+              type="text"
+              className="input-field"
+              placeholder="Username (e.g. meme)"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              style={{ border: 'none', background: 'transparent', margin: 0, width: '100%' }}
+            />
+          </div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <input
               type="text"

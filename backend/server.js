@@ -115,6 +115,28 @@ app.post('/api/admin/change-password', authenticateToken, async (req, res) => {
   });
 });
 
+app.get('/api/settings', authenticateToken, async (req, res) => {
+  try {
+    const usernamePrefix = await getSetting('username_prefix') || '';
+    res.json({ username_prefix: usernamePrefix });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch settings' });
+  }
+});
+
+app.post('/api/admin/settings', authenticateToken, async (req, res) => {
+  const { username_prefix } = req.body || {};
+  if (username_prefix === undefined) {
+    return res.status(400).json({ error: 'Username prefix is required' });
+  }
+  
+  // Update or insert the setting
+  db.run('INSERT INTO settings (key, value) VALUES ("username_prefix", ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value', [username_prefix], (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ ok: true });
+  });
+});
+
 // ==========================================
 // Web UI Management API Endpoints (Protected)
 // ==========================================

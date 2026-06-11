@@ -28,6 +28,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
       // Insert default credentials if they don't exist
       db.run(`INSERT OR IGNORE INTO settings (key, value) VALUES ('admin_username', 'admin')`);
       db.run(`INSERT OR IGNORE INTO settings (key, value) VALUES ('admin_password', 'admin')`);
+      db.run(`INSERT OR IGNORE INTO settings (key, value) VALUES ('username_prefix', '')`);
       // Create a random JWT secret if it doesn't exist
       const crypto = require('crypto');
       const secret = crypto.randomBytes(64).toString('hex');
