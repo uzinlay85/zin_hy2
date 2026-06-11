@@ -239,6 +239,16 @@ pm2 status
 pm2 logs hysteria-ui
 ```
 
+**5. Fix SQLITE_READONLY Error (Database ရေးခွင့်မရသည့် ပြဿနာဖြေရှင်းရန်):**
+If your backend crashes or Web UI fails to save data due to a permission issue (e.g., after restoring a backup):
+```bash
+cd ~/zin_hy2
+sudo chown -R $USER:$USER ~/zin_hy2
+sudo chmod 777 ~/zin_hy2/backend
+sudo chmod 666 ~/zin_hy2/backend/hysteria.db*
+sudo pm2 restart hysteria-ui
+```
+
 ## Server Migration & Backup / ဆာဗာအသစ်သို့ ပြောင်းရွှေ့ခြင်း
 
 If your VPS IP is blocked or throttled, you can easily migrate to a new server without requiring your users to update their VPN keys.
@@ -264,6 +274,21 @@ bash migration.sh backup
 cd ~/zin_hy2
 bash migration.sh restore
 ```
+
+---
+
+## Advanced Security (Secret Admin URL)
+
+To protect against hackers and bot attacks, the Admin Panel is **NOT** accessible from the root domain (`https://your-domain.com`). 
+A Secret Admin URL is automatically generated when the server starts.
+
+To view your current Secret Admin URL, run:
+```bash
+cd ~/zin_hy2
+bash show_url.sh
+```
+It will display a link like `https://your-domain.com/admin_123456`. You must use this exact link to access the login page.
+The system also includes **Rate Limiting**, which will permanently block any IP address for 1 hour if they fail to login 5 times within a 60-minute window.
 
 ---
 
