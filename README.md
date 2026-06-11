@@ -111,6 +111,15 @@ auth:
   http:
     url: http://127.0.0.1:3000/auth
 
+# Prevent VPN users from accessing internal VPS services
+acl:
+  inline:
+    - reject(127.0.0.0/8)
+    - reject(10.0.0.0/8)
+    - reject(172.16.0.0/12)
+    - reject(192.168.0.0/16)
+    - direct(all)
+
 # Required for real-time traffic monitoring
 trafficStats:
   listen: 127.0.0.1:4000
