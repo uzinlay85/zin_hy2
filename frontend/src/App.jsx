@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trash2, Copy, Plus, Server, User, Key, Check, Settings, LogOut, Lock } from 'lucide-react';
+import { Trash2, Copy, Plus, Server, User, Key, Check, Settings, LogOut, Lock, Dices } from 'lucide-react';
 
 function App() {
   // Auth state
@@ -16,7 +16,8 @@ function App() {
   // Main state
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const generatePassword = () => Math.random().toString(36).slice(-8) + Math.floor(Math.random() * 1000).toString();
+  const [password, setPassword] = useState(generatePassword());
   const [copiedId, setCopiedId] = useState(null);
   const [newLink, setNewLink] = useState('');
   const [dataLimit, setDataLimit] = useState('');
@@ -122,7 +123,7 @@ function App() {
         const link = `hysteria2://${username}:${password}@${serverDomain}:443/?sni=${serverDomain}&mport=20000-50000#${username}`;
         setNewLink(link);
         setUsername('');
-        setPassword('');
+        setPassword(generatePassword());
         setDataLimit('');
         setExpiryDays('');
         fetchUsers();
@@ -296,13 +297,24 @@ function App() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
-          <input
-            type="text"
-            className="input-field"
-            placeholder="Password (e.g. Aung2026)"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <input
+              type="text"
+              className="input-field"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button 
+              type="button" 
+              className="btn" 
+              style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.1)' }}
+              onClick={() => setPassword(generatePassword())}
+              title="Generate New Password"
+            >
+              <Dices size={18} />
+            </button>
+          </div>
           <input
             type="number"
             className="input-field"
