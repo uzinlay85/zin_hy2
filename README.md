@@ -189,5 +189,22 @@ npm run build
 4. Click "Copy Link" to get the `hysteria2://` URI and paste it into your VPN client (Nekobox, v2rayN, etc.).
    (ရရှိလာသော Link ကို Copy ကူး၍ VPN Software များတွင် ထည့်သွင်း အသုံးပြုနိုင်ပါပြီ)
 
+## How to Update / နောက်ဆုံး Version သို့ မြှင့်တင်နည်း
+If there are new updates on GitHub, run these commands on your VPS to update the Web UI:
+(Github တွင် အသစ်တင်ထားသော Update များရှိပါက အောက်ပါ Command များဖြင့် အလွယ်တကူ Update လုပ်နိုင်ပါသည်)
+
+```bash
+cd zin_hy2
+git pull
+cd backend
+npm install
+pm2 restart hysteria-ui
+cd ../frontend
+npm install
+npm run build
+```
+
+---
+
 ## License
 MIT License
