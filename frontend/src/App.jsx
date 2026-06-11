@@ -36,7 +36,7 @@ function App() {
         body: JSON.stringify({ username, password })
       });
       if (res.ok) {
-        const link = `hysteria2://${username}:${password}@${serverDomain}:443/?sni=${serverDomain}&mport=20000-50000#${username}`;
+        const link = `hysteria2://${username}:${password}@${serverDomain}:443/?sni=${serverDomain}#${username}`;
         setNewLink(link);
         setUsername('');
         setPassword('');
@@ -153,7 +153,7 @@ function App() {
                       <button 
                         className="btn btn-primary" 
                         style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
-                        onClick={() => handleCopy(`hysteria2://${user.username}:${user.password}@${serverDomain}:443/?sni=${serverDomain}&mport=20000-50000#${user.username}`, `link_${user.id}`)}
+                        onClick={() => handleCopy(`hysteria2://${user.username}:${user.password}@${serverDomain}:443/?sni=${serverDomain}#${user.username}`, `link_${user.id}`)}
                       >
                         {copiedId === `link_${user.id}` ? <Check size={14} /> : <Copy size={14} />} Copy Link
                       </button>
