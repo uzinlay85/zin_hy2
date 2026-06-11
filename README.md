@@ -80,9 +80,12 @@ bash <(curl -fsSL https://get.hy2.sh/)
 *Verify Installation:* `hysteria version`
 
 Edit your Hysteria 2 configuration file (`/etc/hysteria/config.yaml`):
-(Hysteria ရဲ့ Config ဖိုင်ထဲတွင် Certbot မှ ရလာသော Cert လမ်းကြောင်းများကို အစားထိုး ထည့်သွင်းပေးပါ)
+(Hysteria ရဲ့ Config ဖိုင်ထဲတွင် Certbot မှ ရလာသော Cert လမ်းကြောင်းများကို အစားထိုး ထည့်သွင်းပေးရန် အောက်ပါ Command ဖြင့် အလွယ်တကူ ထည့်ပါ)
 
-```yaml
+> **📝 မှတ်ချက်:** အောက်ပါ Command မှ `your-domain.com` နေရာတွင် မိမိ၏ Domain အမှန်ကို အစားထိုးပြီးမှ Copy ကူးထည့်ပါ။
+
+```bash
+sudo bash -c 'cat << "EOF" > /etc/hysteria/config.yaml
 listen: :443
 
 # USE THE CERT PATHS FROM STEP 3 HERE!
@@ -102,6 +105,7 @@ masquerade:
 # Required for real-time traffic monitoring
 trafficStats:
   listen: 127.0.0.1:4000
+EOF'
 ```
 *Restart Hysteria: `sudo systemctl restart hysteria-server`*
 
