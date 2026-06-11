@@ -151,7 +151,10 @@ cd zin_hy2/backend
 npm install
 pm2 start server.js --name hysteria-ui
 pm2 save
+pm2 startup
 ```
+*(When you run `pm2 startup`, it will output a `sudo env PATH...` command. Copy and run that command to enable auto-start on reboot.)*
+*(pm2 startup လို့ ရိုက်လိုက်ရင် ထွက်လာမည့် `sudo env PATH...` စာကြောင်းကို ကော်ပီကူးပြီး ထပ်ရိုက်ပေးမှသာ ဆာဗာ Reboot ကျလျှင် အလိုအလျောက် ပြန်ပွင့်မည် ဖြစ်ပါသည်။)*
 
 ### 7. Build the Frontend (React) / Frontend ကို Build လုပ်ခြင်း
 (Web UI ထွက်လာရန်အတွက် Frontend ကို အောက်ပါအတိုင်း Build လုပ်ပေးပါ)
