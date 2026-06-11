@@ -75,8 +75,9 @@ sudo certbot --nginx -d your-domain.com
 Now install Hysteria 2 on your VPS:
 (Hysteria 2 ကို အောက်ပါ command ဖြင့် Install လုပ်ပါ)
 ```bash
-bash <(curl -fsSL https://get.hysteria.network/)
+bash <(curl -fsSL https://get.hy2.sh/)
 ```
+*Verify Installation:* `hysteria version`
 
 Edit your Hysteria 2 configuration file (`/etc/hysteria/config.yaml`):
 (Hysteria ရဲ့ Config ဖိုင်ထဲတွင် Certbot မှ ရလာသော Cert လမ်းကြောင်းများကို အစားထိုး ထည့်သွင်းပေးပါ)
