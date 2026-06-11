@@ -30,7 +30,7 @@ Install Node.js, Nginx, Certbot, and PM2:
 (အခြေခံ လိုအပ်သော Software များကို Install လုပ်ပါ)
 ```bash
 sudo apt update
-sudo apt install curl wget ufw nginx certbot python3-certbot-nginx -y
+sudo apt install curl wget ufw nginx certbot python3-certbot-nginx sqlite3 -y
 
 # Install Node.js 22.x
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
