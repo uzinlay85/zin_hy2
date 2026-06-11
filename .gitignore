@@ -2,6 +2,7 @@ node_modules/
 dist/
 frontend/dist/
 dist-ssr/
+TODO_Upgrades.md
 .env
 .env.local
 .env.development.local

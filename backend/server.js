@@ -4,6 +4,11 @@ const db = require('./database');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
+
+let ADMIN_PATH = '/';
 
 // Helper to get settings from database
 const getSetting = (key) => {
@@ -37,9 +42,36 @@ const authenticateToken = async (req, res, next) => {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set('trust proxy', 1);
+
+(async () => {
+  try {
+    let path_val = await getSetting('admin_path');
+    if (!path_val) {
+      path_val = '/admin_' + crypto.randomBytes(3).toString('hex');
+      db.run("INSERT INTO settings (key, value) VALUES (?, ?)", ['admin_path', path_val]);
+      console.log(`\n======================================================`);
+      console.log(`🔒 NEW SECRET ADMIN URL GENERATED:`);
+      console.log(`👉 https://your-domain.com${path_val}`);
+      console.log(`======================================================\n`);
+    } else {
+      console.log(`🔒 Secret Admin URL: https://your-domain.com${path_val}`);
+    }
+    ADMIN_PATH = path_val;
+  } catch (err) {
+    console.error("Error setting up admin path:", err);
+  }
+})();
+
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+const loginLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour window
+  max: 5, // start blocking after 5 requests
+  message: { error: 'Too many login attempts. Please try again after 1 hour.' }
+});
 
 // ==========================================
 // Hysteria2 HTTP Auth Endpoint
@@ -85,7 +117,7 @@ app.post('/auth', (req, res) => {
 // Admin Authentication Endpoints
 // ==========================================
 
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', loginLimiter, async (req, res) => {
   const { username, password } = req.body || {};
   
   try {
@@ -314,9 +346,9 @@ app.put('/api/users/:id', authenticateToken, (req, res) => {
 });
 
 // ==========================================
+// ==========================================
 // Serve Frontend Static Files
 // ==========================================
-const path = require('path');
 
 // Backup Database
 app.get('/api/admin/backup', authenticateToken, (req, res) => {
@@ -345,10 +377,14 @@ app.post('/api/admin/restore', authenticateToken, upload.single('database'), (re
   }
 });
 
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
+app.use(express.static(path.join(__dirname, '../frontend/dist'), { index: false }));
 
-app.use((req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+app.get('*', (req, res) => {
+  if (req.path === ADMIN_PATH) {
+    res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+  } else {
+    res.status(404).send('<h1>404 Not Found</h1>');
+  }
 });
 
 // ==========================================
