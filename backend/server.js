@@ -221,16 +221,36 @@ app.post('/api/users/batch', authenticateToken, (req, res) => {
   });
 });
 
+// Helper to kick a user immediately from Hysteria 2
+async function kickUser(username, password) {
+  try {
+    const authId = `${username}:${password}`;
+    // Hysteria 2 API accepts an array of IDs
+    await fetch('http://127.0.0.1:4000/kick', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify([authId])
+    });
+  } catch (e) {
+    console.error('Failed to kick user:', e);
+  }
+}
+
+// Delete a user
 // Delete a user
 app.delete('/api/users/:id', authenticateToken, (req, res) => {
   const id = req.params.id;
-  db.run('DELETE FROM users WHERE id = ?', id, function(err) {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.json({ deleted: this.changes > 0 });
+  db.get('SELECT username, password FROM users WHERE id = ?', [id], (err, row) => {
+    if (!row) return res.status(404).json({ error: 'User not found' });
+    
+    db.run('DELETE FROM users WHERE id = ?', id, function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      kickUser(row.username, row.password);
+      res.json({ deleted: this.changes > 0 });
+    });
   });
 });
+// Edit user status (Suspend/Resume)
 // Edit user status (Suspend/Resume)
 app.put('/api/users/:id/status', authenticateToken, (req, res) => {
   const id = req.params.id;
@@ -239,9 +259,14 @@ app.put('/api/users/:id/status', authenticateToken, (req, res) => {
     return res.status(400).json({ error: 'Invalid status' });
   }
   
-  db.run('UPDATE users SET status = ? WHERE id = ?', [status, id], function(err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ updated: this.changes > 0, status });
+  db.get('SELECT username, password FROM users WHERE id = ?', [id], (err, row) => {
+    if (!row) return res.status(404).json({ error: 'User not found' });
+
+    db.run('UPDATE users SET status = ? WHERE id = ?', [status, id], function(err) {
+      if (err) return res.status(500).json({ error: err.message });
+      if (status === 'suspended') kickUser(row.username, row.password);
+      res.json({ updated: this.changes > 0, status });
+    });
   });
 });
 
@@ -263,15 +288,26 @@ app.put('/api/users/:id', authenticateToken, (req, res) => {
     expiry_date = d.toISOString();
   }
 
-  db.run('UPDATE users SET username = ?, password = ?, data_limit_gb = ?, expiry_days = ?, expiry_date = ? WHERE id = ?', 
-    [username, password, limit, days, expiry_date, id], function(err) {
-    if (err) {
-      if (err.message.includes('UNIQUE constraint failed')) {
-        return res.status(400).json({ error: 'Username already exists' });
+  db.get('SELECT username, password FROM users WHERE id = ?', [id], (err, row) => {
+    if (!row) return res.status(404).json({ error: 'User not found' });
+    const oldUsername = row.username;
+    const oldPassword = row.password;
+
+    db.run('UPDATE users SET username = ?, password = ?, data_limit_gb = ?, expiry_days = ?, expiry_date = ? WHERE id = ?', 
+      [username, password, limit, days, expiry_date, id], function(err) {
+      if (err) {
+        if (err.message.includes('UNIQUE constraint failed')) {
+          return res.status(400).json({ error: 'Username already exists' });
+        }
+        return res.status(500).json({ error: err.message });
       }
-      return res.status(500).json({ error: err.message });
-    }
-    res.json({ updated: this.changes > 0 });
+      
+      // If credentials changed, kick the old session
+      if (oldUsername !== username || oldPassword !== password) {
+        kickUser(oldUsername, oldPassword);
+      }
+      res.json({ updated: this.changes > 0 });
+    });
   });
 });
 
