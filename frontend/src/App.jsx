@@ -65,7 +65,23 @@ function App() {
   };
 
   const handleCopy = (text, id) => {
-    navigator.clipboard.writeText(text);
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text);
+    } else {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "absolute";
+      textArea.style.left = "-999999px";
+      document.body.prepend(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+      } catch (error) {
+        console.error('Fallback copy failed', error);
+      } finally {
+        textArea.remove();
+      }
+    }
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
