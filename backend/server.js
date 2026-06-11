@@ -6,7 +6,8 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const rateLimit = require('express-rate-limit');
+const rateLimitPkg = require('express-rate-limit');
+const rateLimit = rateLimitPkg.rateLimit || rateLimitPkg.default || rateLimitPkg;
 
 let ADMIN_PATH = '/';
 
