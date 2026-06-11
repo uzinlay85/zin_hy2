@@ -189,25 +189,37 @@ npm run build
 4. Click "Copy Link" to get the `hysteria2://` URI and paste it into your VPN client (Nekobox, v2rayN, etc.).
    (ရရှိလာသော Link ကို Copy ကူး၍ VPN Software များတွင် ထည့်သွင်း အသုံးပြုနိုင်ပါပြီ)
 
-## How to Update / နောက်ဆုံး Version သို့ မြှင့်တင်နည်း
-If there are new updates on GitHub, run these commands on your VPS to update the Web UI.
-**(⚠️ WARNING: Always run these commands as your normal user. DO NOT use `sudo su` before updating, otherwise files will become owned by root and cause permission errors!)**
-(Github တွင် အသစ်တင်ထားသော Update များရှိပါက အောက်ပါ Command များဖြင့် အလွယ်တကူ Update လုပ်နိုင်ပါသည်။ **သတိပြုရန် - `sudo su` ဝင်ပြီး Root အကောင့်ဖြင့် Update မလုပ်ပါနှင့်။ Normal User အကောင့်ဖြင့်သာ အမြဲလုပ်ပါ။**)
+## How to Update (ဆာဗာအသစ်နှင့် အဟောင်းများတွင် Update လုပ်နည်း)
+Github တွင် အသစ်တင်ထားသော Update များရှိပါက (သို့မဟုတ်) ဆာဗာအသစ်တစ်ခုတွင် Update လုပ်လိုပါက အောက်ပါ Command များကို တစ်ကြောင်းချင်းစီ ရိုက်ထည့်၍ အလွယ်တကူ Update လုပ်နိုင်ပါသည်။
 
 ```bash
-# If you get "Permission Denied" errors, run this command ONCE to fix permissions:
-# (Permission Error တက်ပါက ဖိုင်ပိုင်ဆိုင်ခွင့်များ ပြန်လည်ရယူရန် အောက်ပါစာကြောင်းကို အရင် Run ပါ)
-# sudo chown -R $USER:$USER ~/zin_hy2
-
+# ၁။ Github ကနေ Code အသစ်တွေ အကုန်ယူမယ်
 cd ~/zin_hy2
+git reset --hard
 git pull
+
+# ၂။ Backend ကို Update လုပ်မယ်
 cd backend
 npm install
-# Since PM2 runs as root, we use sudo here / PM2 ကို Root ဖြင့် Run ထားသဖြင့် ဤနေရာတွင်သာ sudo ခံပါမည်
-sudo pm2 restart hysteria-ui
-cd ../frontend
+
+# ၃။ Permission တွေ ပြန်ချိန်မယ် (အရေးကြီးဆုံး အဆင့်)
+cd ~/zin_hy2
+sudo chown -R $USER:$USER ~/zin_hy2
+sudo chmod 777 ~/zin_hy2/backend
+sudo chmod 666 ~/zin_hy2/backend/hysteria.db*
+
+# ၄။ Frontend ကို Update လုပ်မယ် (၂၀၂၆ UI/UX အသစ်အတွက်)
+cd ~/zin_hy2/frontend
 npm install
 npm run build
+
+# ၅။ Server တွေကို Restart ချမယ်
+sudo pm2 restart hysteria-ui
+sudo systemctl restart nginx
+
+# ၆။ လျှို့ဝှက် Admin URL ကို ထုတ်ကြည့်မယ်
+cd ~/zin_hy2
+bash show_url.sh
 ```
 
 ## How to Check Status & Troubleshoot / အလုပ်လုပ်/မလုပ် စစ်ဆေးနည်းများ
