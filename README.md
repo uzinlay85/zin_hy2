@@ -2,35 +2,39 @@
 
 A modern, fast, and elegant Web UI for managing [Hysteria 2](https://v2.hysteria.network/) VPN users. Built with React (Vite), Express.js, and SQLite.
 
-![Hysteria2 Portal](https://raw.githubusercontent.com/uzinlay85/zin_hy2/main/screenshot.png) *(Placeholder for screenshot)*
+Hysteria 2 VPN အသုံးပြုသူများကို လွယ်ကူစွာ စီမံခန့်ခွဲနိုင်မည့် ခေတ်မီ Web UI လေးဖြစ်ပါတယ်။ React, Express နဲ့ SQLite တို့ကို အသုံးပြုပြီး ရေးသားထားပါတယ်။
 
-## Features
+---
 
-- 🎨 **Modern Glassmorphism UI**: Beautiful dark mode design with a responsive layout.
-- 👥 **User Management**: Easily create and delete VPN access keys (username/password).
-- ⏱️ **Time & Data Limits**: Set optional Data Limits (in GB) and Expiry Dates (in Days) for each user.
-- 🟢 **Real-Time Status**: Monitor active connections with a real-time "Online" indicator and "Last Seen" timestamps.
-- 📊 **Traffic Tracking**: Live tracking of data usage (TX/RX) via Hysteria's Traffic API.
-- 🔗 **One-Click Links**: Automatically generates `hysteria2://` URI links with Port Hopping support (`&mport=20000-50000`).
+## Features / ပါဝင်သော လုပ်ဆောင်ချက်များ
 
-## Prerequisites
+- 🎨 **Modern Glassmorphism UI**: Beautiful dark mode design. (ဆွဲဆောင်မှုရှိတဲ့ Dark Mode ဒီဇိုင်း)
+- 👥 **User Management**: Easily create and delete VPN access keys. (User များကို အလွယ်တကူ အသစ်ဖွင့်/ဖျက် နိုင်ခြင်း)
+- ⏱️ **Time & Data Limits**: Set optional Data Limits (in GB) and Expiry Dates (in Days). (Data သုံးစွဲခွင့် ပမာဏနှင့် သက်တမ်းရက် ကန့်သတ်နိုင်ခြင်း)
+- 🟢 **Real-Time Status**: Monitor active connections with an "Online" indicator. (လက်ရှိ အသုံးပြုနေသူများကို Online အနေဖြင့် တိုက်ရိုက် ကြည့်နိုင်ခြင်း)
+- 📊 **Traffic Tracking**: Live tracking of data usage (TX/RX). (Data အသုံးပြုမှုကို Real-time တွက်ချက်ပြသပေးခြင်း)
+- 🔗 **One-Click Links**: Automatically generates `hysteria2://` URI links with Port Hopping support. (Port Hopping ပါဝင်သည့် VPN Link များကို တစ်ချက်နှိပ်ရုံဖြင့် Copy ကူးနိုင်ခြင်း)
 
-- Ubuntu VPS (20.04 or 22.04 recommended)
-- A Domain Name pointed to your VPS IP
-- [Hysteria 2](https://v2.hysteria.network/docs/getting-started/Installation/) installed
-- Node.js (v18+) & NPM
-- Nginx & PM2
+---
 
-## Complete Setup Guide
+## Complete Setup Guide (English / Myanmar)
 
-### 1. Hysteria 2 Server Configuration
+### 1. Install Hysteria 2 / Hysteria 2 ကို Install လုပ်ခြင်း
+First, install Hysteria 2 on your Ubuntu VPS.
+(ပထမဦးစွာ Ubuntu VPS တွင် Hysteria 2 ကို အောက်ပါ command ဖြင့် Install လုပ်ပါ)
+```bash
+bash <(curl -fsSL https://get.hysteria.network/)
+```
+
+### 2. Hysteria 2 Server Configuration / ဆာဗာ Setting ချိန်ခြင်း
 Edit your Hysteria 2 configuration file (`/etc/hysteria/config.yaml`):
+(Hysteria ရဲ့ Config ဖိုင်ထဲတွင် အောက်ပါအတိုင်း ပြင်ဆင်ပါ)
 
 ```yaml
 listen: :443
 tls:
-  cert: /etc/hysteria/fullchain.cer
-  key: /etc/hysteria/private.key
+  cert: /etc/hysteria/fullchain.cer # Your SSL Cert path
+  key: /etc/hysteria/private.key    # Your SSL Key path
 
 auth:
   type: http
@@ -41,15 +45,16 @@ masquerade:
   type: string
   string: "Welcome to Hysteria 2!"
 
-# Required for real-time traffic monitoring
+# Required for real-time traffic monitoring (Data တွက်ချက်ရန် မဖြစ်မနေ ထည့်ရပါမည်)
 trafficStats:
   listen: 127.0.0.1:4000
 ```
 *Restart Hysteria: `sudo systemctl restart hysteria-server`*
 
-### 2. Configure Port Hopping (UFW & Iptables)
+### 3. Configure Port Hopping (UFW & Iptables)
 To support Port Hopping (20000-50000) alongside UFW, edit `/etc/ufw/before.rules`.
 Add the following lines at the **very top** of the file (before `*filter`):
+(Port Hopping သုံးရန်အတွက် UFW Rule ဖိုင်ရဲ့ အပေါ်ဆုံးတွင် အောက်ပါစာကြောင်းများကို ထည့်ပါ)
 
 ```text
 *nat
@@ -59,8 +64,9 @@ COMMIT
 ```
 *Reload UFW: `sudo ufw reload`*
 
-### 3. Install Dependencies & Clone Repository
-Install required packages:
+### 4. Install Dependencies & Clone Repository / လိုအပ်သည်များ သွင်းခြင်း
+Install Node.js, Nginx, and PM2:
+(လိုအပ်သော Node.js, Nginx နှင့် PM2 များကို Install လုပ်ပါ)
 ```bash
 sudo apt update
 sudo apt install nodejs npm nginx -y
@@ -68,12 +74,13 @@ sudo npm install -g pm2
 ```
 
 Clone the repository:
+(Code များကို Github မှ ဆွဲယူပါ)
 ```bash
 git clone https://github.com/uzinlay85/zin_hy2.git
 cd zin_hy2
 ```
 
-### 4. Setup the Backend
+### 5. Setup the Backend / Backend စတင်ခြင်း
 ```bash
 cd backend
 npm install
@@ -81,22 +88,24 @@ pm2 start server.js --name hysteria-ui
 pm2 save
 ```
 
-### 5. Setup the Frontend (Optional if pre-built)
-If the `dist` folder is not included, build the React frontend:
+### 6. Setup the Frontend (Optional) / Frontend Build လုပ်ခြင်း
+If you made changes to the React code, build the frontend:
+(အကယ်၍ React ဖိုင်များ ပြင်ဆင်ထားပါက အောက်ပါအတိုင်း Build လုပ်ပါ)
 ```bash
 cd ../frontend
 npm install
 npm run build
 ```
 
-### 6. Configure Nginx Reverse Proxy
-Create a new Nginx configuration to serve the Web UI on port 80 (or 443).
+### 7. Configure Nginx Reverse Proxy / Nginx ဖြင့် ချိတ်ဆက်ခြင်း
+Create a new Nginx configuration to serve the Web UI.
 Edit `/etc/nginx/sites-available/default`:
+(Web UI ကို Domain ဖြင့် ခေါ်နိုင်ရန် Nginx တွင် အောက်ပါအတိုင်း ထည့်ပါ)
 
 ```nginx
 server {
     listen 80;
-    server_name your-domain.com; # Replace with your domain
+    server_name your-domain.com; # Replace with your domain (သင့် Domain နာမည် ပြောင်းထည့်ပါ)
 
     location / {
         proxy_pass http://127.0.0.1:3000;
@@ -109,15 +118,16 @@ server {
 ```
 *Restart Nginx: `sudo systemctl restart nginx`*
 
-## Usage
+---
 
-1. Open your browser and navigate to `http://your-domain.com`.
-2. Use the "Create New Key" section to add users.
-3. Copy the generated `hysteria2://` link and paste it into your Hysteria client (Nekobox, v2rayN, Shadowrocket, etc.).
+## Usage / အသုံးပြုနည်း
 
-## Security Note
-
-Currently, the Web UI is exposed without an admin login page. It is highly recommended to secure the Nginx proxy using **Basic Auth** or host it on a completely secret sub-path/port if deployed publicly.
+1. Open your browser and navigate to your domain (e.g., `http://your-domain.com`).
+   (သင့် Domain ကို Browser တွင် ဖွင့်ပါ)
+2. Use the "Create New Key" section to add users. You can specify a Data Limit (GB) and Expiry (Days).
+   (User အသစ်များကို Data Limit နှင့် ရက်အကန့်အသတ်များဖြင့် ဖန်တီးနိုင်ပါသည်)
+3. Click "Copy Link" to get the `hysteria2://` URI and paste it into your VPN client (Nekobox, v2rayN, etc.).
+   (ရရှိလာသော Link ကို Copy ကူး၍ VPN Software များတွင် ထည့်သွင်း အသုံးပြုနိုင်ပါပြီ)
 
 ## License
 MIT License
