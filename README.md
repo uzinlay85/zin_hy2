@@ -204,6 +204,34 @@ npm install
 npm run build
 ```
 
+## How to Check Status & Troubleshoot / အလုပ်လုပ်/မလုပ် စစ်ဆေးနည်းများ
+
+If something is not working, you can use these commands to check the server status:
+(ဆာဗာ အလုပ်လုပ်ခြင်း ရှိ/မရှိ စစ်ဆေးရန် အောက်ပါ Command များကို အသုံးပြုပါ)
+
+**1. Check Hysteria 2 Server Status (Hysteria အလုပ်လုပ်/မလုပ် စစ်ရန်):**
+```bash
+sudo systemctl status hysteria-server
+```
+*(It should say `active (running)`. / အစိမ်းရောင်ဖြင့် active ဟု ပြနေရပါမည်)*
+
+**2. Check Hysteria 2 Live Logs (Hysteria ၏ အမှားများကို ကြည့်ရန်):**
+```bash
+sudo journalctl -u hysteria-server.service -n 50 -f
+```
+*(Press `Ctrl+C` to exit / ထွက်ရန် Ctrl+C ကိုနှိပ်ပါ)*
+
+**3. Check Web UI Backend Status (Web UI အလုပ်လုပ်/မလုပ် စစ်ရန်):**
+```bash
+pm2 status
+```
+*(It should say `online`. / အစိမ်းရောင်ဖြင့် online ဟု ပြနေရပါမည်)*
+
+**4. Check Web UI Error Logs (Web UI ၏ အမှားများကို ကြည့်ရန်):**
+```bash
+pm2 logs hysteria-ui
+```
+
 ---
 
 ## License
