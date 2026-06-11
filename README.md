@@ -225,6 +225,7 @@ sudo journalctl -u hysteria-server.service -n 50 -f
 ```bash
 pm2 status
 ```
+*(Note: PM2 is user-specific. If you installed it as `root`, you must use `sudo pm2 status` and `sudo pm2 logs` to see it! / မှတ်ချက် - မိမိက root ဖြင့် သွင်းခဲ့ပါက `sudo pm2 status` ဟု ရိုက်မှသာ မြင်ရပါမည်)*
 *(It should say `online`. / အစိမ်းရောင်ဖြင့် online ဟု ပြနေရပါမည်)*
 
 **4. Check Web UI Error Logs (Web UI ၏ အမှားများကို ကြည့်ရန်):**
