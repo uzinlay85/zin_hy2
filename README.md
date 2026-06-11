@@ -123,15 +123,18 @@ sudo ufw allow 443/udp
 sudo ufw allow 20000:50000/udp
 ```
 
-To support Port Hopping (20000-50000) alongside UFW, edit `/etc/ufw/before.rules`.
-Add the following lines at the **very top** of the file (before `*filter`):
-(Port Hopping သုံးရန်အတွက် UFW Rule ဖိုင်ရဲ့ အပေါ်ဆုံးတွင် အောက်ပါစာကြောင်းများကို ထည့်ပါ)
+To support Port Hopping (20000-50000) alongside UFW, we need to add NAT rules to `/etc/ufw/before.rules`.
+You can easily append them by running this command:
+(Port Hopping သုံးရန်အတွက် UFW Rule ဖိုင်ထဲသို့ အောက်ပါ Command ဖြင့် အလိုအလျောက် ထည့်သွင်းပါ)
 
-```text
+```bash
+sudo bash -c 'cat << "EOF" >> /etc/ufw/before.rules
+
 *nat
 :PREROUTING ACCEPT [0:0]
 -A PREROUTING -p udp --dport 20000:50000 -j REDIRECT --to-ports 443
 COMMIT
+EOF'
 ```
 *Reload UFW: `sudo ufw reload`*
 
