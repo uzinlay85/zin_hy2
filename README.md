@@ -105,7 +105,16 @@ EOF'
 ```
 *Restart Hysteria: `sudo systemctl restart hysteria-server`*
 
-### 5. Configure Port Hopping (UFW Firewall)
+### 5. Configure Firewall & Port Hopping (UFW)
+Open the necessary ports for Web UI (HTTP/HTTPS) and Hysteria 2 (UDP):
+(Web UI နှင့် Hysteria 2 အလုပ်လုပ်ရန် လိုအပ်သော Port များကို Firewall တွင် ဖွင့်ပေးပါ)
+```bash
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw allow 443/udp
+sudo ufw allow 20000:50000/udp
+```
+
 To support Port Hopping (20000-50000) alongside UFW, edit `/etc/ufw/before.rules`.
 Add the following lines at the **very top** of the file (before `*filter`):
 (Port Hopping သုံးရန်အတွက် UFW Rule ဖိုင်ရဲ့ အပေါ်ဆုံးတွင် အောက်ပါစာကြောင်းများကို ထည့်ပါ)
