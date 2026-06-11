@@ -137,6 +137,14 @@ pm2 start server.js --name hysteria-ui
 pm2 save
 ```
 
+### 7. Build the Frontend (React) / Frontend ကို Build လုပ်ခြင်း
+(Web UI ထွက်လာရန်အတွက် Frontend ကို အောက်ပါအတိုင်း Build လုပ်ပေးပါ)
+```bash
+cd ../frontend
+npm install
+npm run build
+```
+
 ---
 
 ## Usage / အသုံးပြုနည်း
