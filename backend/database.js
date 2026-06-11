@@ -18,7 +18,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
       expiry_days INTEGER DEFAULT NULL,
       expiry_date DATETIME DEFAULT NULL,
       data_used_bytes INTEGER DEFAULT 0,
-      status TEXT DEFAULT 'active'
+      status TEXT DEFAULT 'active',
+      last_active_time DATETIME DEFAULT NULL
     )`);
     
     // Add columns for existing databases (ignore errors if columns already exist)
@@ -27,6 +28,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
     db.run(`ALTER TABLE users ADD COLUMN expiry_date DATETIME DEFAULT NULL`, () => {});
     db.run(`ALTER TABLE users ADD COLUMN data_used_bytes INTEGER DEFAULT 0`, () => {});
     db.run(`ALTER TABLE users ADD COLUMN status TEXT DEFAULT 'active'`, () => {});
+    db.run(`ALTER TABLE users ADD COLUMN last_active_time DATETIME DEFAULT NULL`, () => {});
   }
 });
 

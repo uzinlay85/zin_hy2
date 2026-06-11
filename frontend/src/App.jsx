@@ -105,6 +105,24 @@ function App() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const isOnline = (lastActiveTime) => {
+    if (!lastActiveTime) return false;
+    const lastActive = new Date(lastActiveTime + 'Z').getTime();
+    const now = new Date().getTime();
+    return (now - lastActive) < 65000; // Online if active within last 65 seconds
+  };
+
+  const formatLastSeen = (lastActiveTime) => {
+    if (!lastActiveTime) return 'Never';
+    if (isOnline(lastActiveTime)) return 'Online Now';
+    const lastActive = new Date(lastActiveTime + 'Z');
+    const mins = Math.floor((new Date().getTime() - lastActive.getTime()) / 60000);
+    if (mins < 60) return `${mins} mins ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours} hours ago`;
+    return lastActive.toLocaleDateString();
+  };
+
   return (
     <div className="container">
       <div className="header">
@@ -186,7 +204,17 @@ function App() {
               ) : (
                 users.map((user) => (
                   <tr key={user.id}>
-                    <td>{user.username}</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {user.username}
+                        {isOnline(user.last_active_time) && (
+                          <span title="Online Now" style={{ width: '8px', height: '8px', backgroundColor: '#10b981', borderRadius: '50%', display: 'inline-block', boxShadow: '0 0 5px #10b981' }}></span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '4px' }}>
+                        Seen: {formatLastSeen(user.last_active_time)}
+                      </div>
+                    </td>
                     <td>
                       <div className="password-cell">
                         {user.password}

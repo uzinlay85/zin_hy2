@@ -55,7 +55,7 @@ app.post('/auth', (req, res) => {
 
 // Get all users
 app.get('/api/users', (req, res) => {
-  db.all('SELECT id, username, password, created_at, data_limit_gb, expiry_days, expiry_date, data_used_bytes, status FROM users ORDER BY created_at DESC', [], (err, rows) => {
+  db.all('SELECT id, username, password, created_at, data_limit_gb, expiry_days, expiry_date, data_used_bytes, status, last_active_time FROM users ORDER BY created_at DESC', [], (err, rows) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -126,7 +126,7 @@ setInterval(async () => {
         const [username, password] = auth.split(':');
         const usedBytes = usage.tx + usage.rx;
         if (usedBytes > 0 && username && password) {
-          db.run('UPDATE users SET data_used_bytes = data_used_bytes + ? WHERE username = ? AND password = ?', [usedBytes, username, password]);
+          db.run("UPDATE users SET data_used_bytes = data_used_bytes + ?, last_active_time = datetime('now') WHERE username = ? AND password = ?", [usedBytes, username, password]);
         }
       }
     }
