@@ -135,9 +135,14 @@ sudo certbot --nginx -d your-domain.com
 
 1. Open your browser and navigate to your domain (e.g., `http://your-domain.com`).
    (သင့် Domain ကို Browser တွင် ဖွင့်ပါ)
-2. Use the "Create New Key" section to add users. You can specify a Data Limit (GB) and Expiry (Days).
+2. **Login / အကောင့်ဝင်ခြင်း**: 
+   - **Default Username**: `admin`
+   - **Default Password**: `admin`
+   *(Please log in and immediately click the ⚙️ Settings icon to change your password!)*
+   *(အကောင့်ဝင်ပြီးသည်နှင့် ညာဘက်အပေါ်ထောင့်ရှိ ⚙️ Settings ခလုတ်ကို နှိပ်၍ Password ချက်ချင်း ပြောင်းပေးပါ။)*
+3. Use the "Create New Key" section to add users. You can specify a Data Limit (GB) and Expiry (Days).
    (User အသစ်များကို Data Limit နှင့် ရက်အကန့်အသတ်များဖြင့် ဖန်တီးနိုင်ပါသည်)
-3. Click "Copy Link" to get the `hysteria2://` URI and paste it into your VPN client (Nekobox, v2rayN, etc.).
+4. Click "Copy Link" to get the `hysteria2://` URI and paste it into your VPN client (Nekobox, v2rayN, etc.).
    (ရရှိလာသော Link ကို Copy ကူး၍ VPN Software များတွင် ထည့်သွင်း အသုံးပြုနိုင်ပါပြီ)
 
 ## License
