@@ -177,16 +177,22 @@ npm run build
 
 ## Usage / အသုံးပြုနည်း
 
-1. Open your browser and navigate to your domain (e.g., `https://your-domain.com`).
-   (သင့် Domain ကို Browser တွင် ဖွင့်ပါ)
-2. **Login / အကောင့်ဝင်ခြင်း**: 
+1. Run the `show_url.sh` script to get your Secret Admin URL:
+   (လျှို့ဝှက် Admin URL ကို သိရှိရန် အောက်ပါ Command ကို ရိုက်ပါ)
+   ```bash
+   cd ~/zin_hy2
+   bash show_url.sh
+   ```
+2. Open your browser and navigate to the generated Secret URL (e.g., `https://your-domain.com/admin_123456`). 
+   (ရရှိလာသော လျှို့ဝှက် URL ကို Browser တွင် ဖွင့်ပါ)
+3. **Login / အကောင့်ဝင်ခြင်း**: 
    - **Default Username**: `admin`
    - **Default Password**: `admin`
    *(Please log in and immediately click the ⚙️ Settings icon to change your password!)*
    *(အကောင့်ဝင်ပြီးသည်နှင့် ညာဘက်အပေါ်ထောင့်ရှိ ⚙️ Settings ခလုတ်ကို နှိပ်၍ Password ချက်ချင်း ပြောင်းပေးပါ။)*
-3. Use the "Create New Key" section to add users. You can specify a Data Limit (GB) and Expiry (Days).
+4. Use the "Create New Key" section to add users. You can specify a Data Limit (GB) and Expiry (Days).
    (User အသစ်များကို Data Limit နှင့် ရက်အကန့်အသတ်များဖြင့် ဖန်တီးနိုင်ပါသည်)
-4. Click "Copy Link" to get the `hysteria2://` URI and paste it into your VPN client (Nekobox, v2rayN, etc.).
+5. Click "Copy Link" to get the `hysteria2://` URI and paste it into your VPN client (Nekobox, v2rayN, etc.).
    (ရရှိလာသော Link ကို Copy ကူး၍ VPN Software များတွင် ထည့်သွင်း အသုံးပြုနိုင်ပါပြီ)
 
 ## How to Update (ဆာဗာအသစ်နှင့် အဟောင်းများတွင် Update လုပ်နည်း)
