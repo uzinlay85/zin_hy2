@@ -231,6 +231,49 @@ app.delete('/api/users/:id', authenticateToken, (req, res) => {
     res.json({ deleted: this.changes > 0 });
   });
 });
+// Edit user status (Suspend/Resume)
+app.put('/api/users/:id/status', authenticateToken, (req, res) => {
+  const id = req.params.id;
+  const { status } = req.body || {};
+  if (status !== 'active' && status !== 'suspended') {
+    return res.status(400).json({ error: 'Invalid status' });
+  }
+  
+  db.run('UPDATE users SET status = ? WHERE id = ?', [status, id], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ updated: this.changes > 0, status });
+  });
+});
+
+// Edit user details
+app.put('/api/users/:id', authenticateToken, (req, res) => {
+  const id = req.params.id;
+  const { username, password, data_limit_gb, expiry_days } = req.body || {};
+  
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password are required' });
+  }
+
+  const limit = data_limit_gb ? parseInt(data_limit_gb) : null;
+  const days = expiry_days ? parseInt(expiry_days) : null;
+  let expiry_date = null;
+  if (days) {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    expiry_date = d.toISOString();
+  }
+
+  db.run('UPDATE users SET username = ?, password = ?, data_limit_gb = ?, expiry_days = ?, expiry_date = ? WHERE id = ?', 
+    [username, password, limit, days, expiry_date, id], function(err) {
+    if (err) {
+      if (err.message.includes('UNIQUE constraint failed')) {
+        return res.status(400).json({ error: 'Username already exists' });
+      }
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({ updated: this.changes > 0 });
+  });
+});
 
 // ==========================================
 // Serve Frontend Static Files

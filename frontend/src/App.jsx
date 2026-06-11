@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trash2, Copy, Plus, Server, User, Key, Check, Settings, LogOut, Lock, Dices } from 'lucide-react';
+import { Trash2, Copy, Plus, Server, User, Key, Check, Settings, LogOut, Lock, Dices, Pause, Play, Edit } from 'lucide-react';
 
 function App() {
   // Auth state
@@ -28,6 +28,14 @@ function App() {
   const [dataLimit, setDataLimit] = useState('');
   const [expiryDays, setExpiryDays] = useState('');
   const serverDomain = window.location.hostname;
+
+  // Edit state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editUsername, setEditUsername] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const [editDataLimit, setEditDataLimit] = useState('');
+  const [editExpiryDays, setEditExpiryDays] = useState('');
 
   useEffect(() => {
     if (token) {
@@ -240,6 +248,62 @@ function App() {
     }
   };
 
+  const handleToggleStatus = async (id, currentStatus) => {
+    const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
+    try {
+      const res = await fetch(`/api/users/${id}/status`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.status === 401 || res.status === 403) return handleLogout();
+      if (res.ok) fetchUsers();
+    } catch (err) {
+      console.error('Failed to toggle status', err);
+    }
+  };
+
+  const openEditModal = (user) => {
+    setEditingUser(user.id);
+    setEditUsername(user.username);
+    setEditPassword(user.password);
+    setEditDataLimit(user.data_limit_gb !== null ? user.data_limit_gb : '');
+    setEditExpiryDays(user.expiry_days !== null ? user.expiry_days : '');
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`/api/users/${editingUser}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({ 
+          username: editUsername,
+          password: editPassword,
+          data_limit_gb: editDataLimit ? parseInt(editDataLimit) : null,
+          expiry_days: editExpiryDays ? parseInt(editExpiryDays) : null
+        })
+      });
+      if (res.status === 401 || res.status === 403) return handleLogout();
+      if (res.ok) {
+        setShowEditModal(false);
+        fetchUsers();
+      } else {
+        const errData = await res.json();
+        alert(`Error: ${errData.error}`);
+      }
+    } catch (err) {
+      console.error('Failed to edit user', err);
+    }
+  };
+
   const handleCopy = (text, id) => {
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(text);
@@ -369,6 +433,66 @@ function App() {
                 </button>
                 <button type="submit" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
                   Save Prefix
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {showEditModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', margin: '1rem' }}>
+            <h2>Edit User</h2>
+            <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <input
+                type="text"
+                className="input-field"
+                placeholder="Username"
+                value={editUsername}
+                onChange={(e) => setEditUsername(e.target.value)}
+                required
+              />
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Password"
+                  value={editPassword}
+                  onChange={(e) => setEditPassword(e.target.value)}
+                  required
+                />
+                <button 
+                  type="button" 
+                  className="btn" 
+                  style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.1)' }}
+                  onClick={() => setEditPassword(generatePassword())}
+                  title="Generate New Password"
+                >
+                  <Dices size={18} />
+                </button>
+              </div>
+              <input
+                type="number"
+                className="input-field"
+                placeholder="Data Limit in GB (Optional)"
+                value={editDataLimit}
+                onChange={(e) => setEditDataLimit(e.target.value)}
+              />
+              <input
+                type="number"
+                className="input-field"
+                placeholder="Days Valid (Optional)"
+                value={editExpiryDays}
+                onChange={(e) => setEditExpiryDays(e.target.value)}
+              />
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button type="button" className="btn btn-danger" style={{ flex: 1 }} onClick={() => setShowEditModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
+                  Save
                 </button>
               </div>
             </form>
@@ -575,12 +699,32 @@ function App() {
                       </div>
                     </td>
                     <td>
-                      <button 
-                        className="btn btn-danger" 
-                        onClick={() => handleDeleteUser(user.id)}
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button 
+                          className="btn" 
+                          style={{ padding: '0.5rem', background: user.status === 'suspended' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)', color: user.status === 'suspended' ? '#10b981' : '#f59e0b' }}
+                          onClick={() => handleToggleStatus(user.id, user.status)}
+                          title={user.status === 'suspended' ? 'Resume User' : 'Suspend User'}
+                        >
+                          {user.status === 'suspended' ? <Play size={16} /> : <Pause size={16} />}
+                        </button>
+                        <button 
+                          className="btn" 
+                          style={{ padding: '0.5rem', background: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6' }}
+                          onClick={() => openEditModal(user)}
+                          title="Edit User"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button 
+                          className="btn btn-danger" 
+                          style={{ padding: '0.5rem' }}
+                          onClick={() => handleDeleteUser(user.id)}
+                          title="Delete User"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
