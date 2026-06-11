@@ -47,16 +47,25 @@ app.set('trust proxy', 1);
 
 (async () => {
   try {
+    let domain = 'your-domain.com';
+    try {
+      const nginxConfig = fs.readFileSync('/etc/nginx/sites-available/default', 'utf8');
+      const match = nginxConfig.match(/server_name\s+([a-zA-Z0-9.-]+)/);
+      if (match && match[1] && match[1] !== '_' && match[1] !== 'your-domain.com') {
+          domain = match[1].trim();
+      }
+    } catch (e) {}
+
     let path_val = await getSetting('admin_path');
     if (!path_val) {
       path_val = '/admin_' + crypto.randomBytes(3).toString('hex');
       db.run("INSERT INTO settings (key, value) VALUES (?, ?)", ['admin_path', path_val]);
       console.log(`\n======================================================`);
       console.log(`🔒 NEW SECRET ADMIN URL GENERATED:`);
-      console.log(`👉 https://your-domain.com${path_val}`);
+      console.log(`👉 https://${domain}${path_val}`);
       console.log(`======================================================\n`);
     } else {
-      console.log(`🔒 Secret Admin URL: https://your-domain.com${path_val}`);
+      console.log(`🔒 Secret Admin URL: https://${domain}${path_val}`);
     }
     ADMIN_PATH = path_val;
   } catch (err) {
