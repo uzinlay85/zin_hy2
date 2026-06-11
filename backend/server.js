@@ -36,8 +36,12 @@ app.post('/auth', (req, res) => {
     }
     
     if (row) {
+      // Check status
+      if (row.status !== 'active') {
+        return res.json({ ok: false });
+      }
       // Authentication successful
-      return res.json({ ok: true, id: username });
+      return res.json({ ok: true, id: auth }); // Use 'auth' as ID for traffic API mapping
     } else {
       // Authentication failed
       return res.json({ ok: false });
@@ -51,7 +55,7 @@ app.post('/auth', (req, res) => {
 
 // Get all users
 app.get('/api/users', (req, res) => {
-  db.all('SELECT id, username, password, created_at FROM users ORDER BY created_at DESC', [], (err, rows) => {
+  db.all('SELECT id, username, password, created_at, data_limit_gb, expiry_days, expiry_date, data_used_bytes, status FROM users ORDER BY created_at DESC', [], (err, rows) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
@@ -61,13 +65,23 @@ app.get('/api/users', (req, res) => {
 
 // Create a new user
 app.post('/api/users', (req, res) => {
-  const { username, password } = req.body || {};
+  const { username, password, data_limit_gb, expiry_days } = req.body || {};
   
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required' });
   }
 
-  db.run('INSERT INTO users (username, password) VALUES (?, ?)', [username, password], function(err) {
+  const limit = data_limit_gb ? parseInt(data_limit_gb) : null;
+  const days = expiry_days ? parseInt(expiry_days) : null;
+  let expiry_date = null;
+  if (days) {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    expiry_date = d.toISOString();
+  }
+
+  db.run('INSERT INTO users (username, password, data_limit_gb, expiry_days, expiry_date) VALUES (?, ?, ?, ?, ?)', 
+    [username, password, limit, days, expiry_date], function(err) {
     if (err) {
       if (err.message.includes('UNIQUE constraint failed')) {
         return res.status(400).json({ error: 'Username already exists' });
@@ -98,6 +112,47 @@ app.use(express.static(path.join(__dirname, '../frontend/dist')));
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
 });
+
+// ==========================================
+// Traffic Monitor (Runs every 30 seconds)
+// ==========================================
+setInterval(async () => {
+  try {
+    const res = await fetch('http://127.0.0.1:4000/traffic?clear=1');
+    if (res.ok) {
+      const traffic = await res.json();
+      for (const [auth, usage] of Object.entries(traffic)) {
+        if (!auth) continue;
+        const [username, password] = auth.split(':');
+        const usedBytes = usage.tx + usage.rx;
+        if (usedBytes > 0 && username && password) {
+          db.run('UPDATE users SET data_used_bytes = data_used_bytes + ? WHERE username = ? AND password = ?', [usedBytes, username, password]);
+        }
+      }
+    }
+  } catch (e) {
+    // Traffic API not reachable, ignore quietly
+  }
+
+  // Update statuses based on limits
+  db.all('SELECT * FROM users WHERE status = "active"', [], (err, rows) => {
+    if (err) return;
+    for (const user of rows) {
+      let expired = false;
+      let limit_exceeded = false;
+      if (user.expiry_date && new Date() > new Date(user.expiry_date)) {
+        expired = true;
+      }
+      if (user.data_limit_gb !== null && user.data_used_bytes >= (user.data_limit_gb * 1024 * 1024 * 1024)) {
+        limit_exceeded = true;
+      }
+      if (expired || limit_exceeded) {
+        const newStatus = expired ? 'expired' : 'limit_exceeded';
+        db.run('UPDATE users SET status = ? WHERE id = ?', [newStatus, user.id]);
+      }
+    }
+  });
+}, 30000);
 
 // Start the server
 app.listen(PORT, () => {

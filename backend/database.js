@@ -13,8 +13,20 @@ const db = new sqlite3.Database(dbPath, (err) => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      data_limit_gb INTEGER DEFAULT NULL,
+      expiry_days INTEGER DEFAULT NULL,
+      expiry_date DATETIME DEFAULT NULL,
+      data_used_bytes INTEGER DEFAULT 0,
+      status TEXT DEFAULT 'active'
     )`);
+    
+    // Add columns for existing databases (ignore errors if columns already exist)
+    db.run(`ALTER TABLE users ADD COLUMN data_limit_gb INTEGER DEFAULT NULL`, () => {});
+    db.run(`ALTER TABLE users ADD COLUMN expiry_days INTEGER DEFAULT NULL`, () => {});
+    db.run(`ALTER TABLE users ADD COLUMN expiry_date DATETIME DEFAULT NULL`, () => {});
+    db.run(`ALTER TABLE users ADD COLUMN data_used_bytes INTEGER DEFAULT 0`, () => {});
+    db.run(`ALTER TABLE users ADD COLUMN status TEXT DEFAULT 'active'`, () => {});
   }
 });
 

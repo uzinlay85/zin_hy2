@@ -7,10 +7,14 @@ function App() {
   const [password, setPassword] = useState('');
   const [copiedId, setCopiedId] = useState(null);
   const [newLink, setNewLink] = useState('');
+  const [dataLimit, setDataLimit] = useState('');
+  const [expiryDays, setExpiryDays] = useState('');
   const serverDomain = 'delux.truehand.top';
 
   useEffect(() => {
     fetchUsers();
+    const interval = setInterval(fetchUsers, 10000); // refresh every 10s
+    return () => clearInterval(interval);
   }, []);
 
   const fetchUsers = async () => {
@@ -33,13 +37,20 @@ function App() {
       const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ 
+          username, 
+          password,
+          data_limit_gb: dataLimit ? parseInt(dataLimit) : null,
+          expiry_days: expiryDays ? parseInt(expiryDays) : null
+        })
       });
       if (res.ok) {
         const link = `hysteria2://${username}:${password}@${serverDomain}:443/?sni=${serverDomain}&mport=20000-50000#${username}`;
         setNewLink(link);
         setUsername('');
         setPassword('');
+        setDataLimit('');
+        setExpiryDays('');
         fetchUsers();
       } else {
         const errData = await res.json();
@@ -86,6 +97,14 @@ function App() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const formatBytes = (bytes) => {
+    if (!bytes || bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   return (
     <div className="container">
       <div className="header">
@@ -110,7 +129,21 @@ function App() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <button type="submit" className="btn btn-primary">
+          <input
+            type="number"
+            className="input-field"
+            placeholder="Data Limit in GB (Optional)"
+            value={dataLimit}
+            onChange={(e) => setDataLimit(e.target.value)}
+          />
+          <input
+            type="number"
+            className="input-field"
+            placeholder="Days Valid (Optional)"
+            value={expiryDays}
+            onChange={(e) => setExpiryDays(e.target.value)}
+          />
+          <button type="submit" className="btn btn-primary" style={{ gridColumn: '1 / -1' }}>
             Add Key
           </button>
         </form>
@@ -140,14 +173,15 @@ function App() {
                 <th><User size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> Username</th>
                 <th><Key size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> Password</th>
                 <th>VPN Link</th>
-                <th>Created At</th>
+                <th>Usage</th>
+                <th>Status</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="empty-state">No users found. Create your first key above.</td>
+                  <td colSpan="6" className="empty-state">No users found. Create your first key above.</td>
                 </tr>
               ) : (
                 users.map((user) => (
@@ -174,7 +208,29 @@ function App() {
                         {copiedId === `link_${user.id}` ? <Check size={14} /> : <Copy size={14} />} Copy Link
                       </button>
                     </td>
-                    <td>{new Date(user.created_at).toLocaleDateString()}</td>
+                    <td>
+                      <div style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>
+                        {formatBytes(user.data_used_bytes)} / {user.data_limit_gb ? `${user.data_limit_gb} GB` : '∞'}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span style={{ 
+                          padding: '2px 6px', 
+                          borderRadius: '4px', 
+                          fontSize: '0.75rem', 
+                          fontWeight: 'bold',
+                          color: '#fff',
+                          textAlign: 'center',
+                          backgroundColor: user.status === 'active' ? '#10b981' : user.status === 'expired' ? '#ef4444' : '#f59e0b'
+                        }}>
+                          {user.status ? user.status.toUpperCase() : 'ACTIVE'}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center' }}>
+                          {user.expiry_date ? new Date(user.expiry_date).toLocaleDateString() : 'No Expiry'}
+                        </span>
+                      </div>
+                    </td>
                     <td>
                       <button 
                         className="btn btn-danger" 
