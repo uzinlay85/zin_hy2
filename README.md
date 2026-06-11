@@ -98,10 +98,6 @@ auth:
   http:
     url: http://127.0.0.1:3000/auth
 
-masquerade:
-  type: string
-  string: "Welcome to Hysteria 2!"
-
 # Required for real-time traffic monitoring
 trafficStats:
   listen: 127.0.0.1:4000
