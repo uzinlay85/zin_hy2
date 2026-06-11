@@ -685,8 +685,8 @@ function App() {
 
       <div className="glass-panel">
         <h2><Server size={18} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '8px' }} /> Active Users</h2>
-        <div className="table-container">
-          <table>
+        <div className="table-container user-list-container">
+          <table className="user-table">
             <thead>
               <tr>
                 <th><User size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> Username</th>
@@ -705,7 +705,7 @@ function App() {
               ) : (
                 users.map((user) => (
                   <tr key={user.id}>
-                    <td>
+                    <td data-label="Username">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         {user.username}
                         {isOnline(user.last_active_time) && (
@@ -716,7 +716,7 @@ function App() {
                         Seen: {formatLastSeen(user.last_active_time)}
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Password">
                       <div className="password-cell">
                         {user.password}
                         <button 
@@ -728,7 +728,7 @@ function App() {
                         </button>
                       </div>
                     </td>
-                    <td>
+                    <td data-label="VPN Link">
                       <button 
                         className="btn btn-primary" 
                         style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
@@ -737,22 +737,14 @@ function App() {
                         {copiedId === `link_${user.id}` ? <Check size={14} /> : <Copy size={14} />} Copy Link
                       </button>
                     </td>
-                    <td>
+                    <td data-label="Usage">
                       <div style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>
                         {formatBytes(user.data_used_bytes)} / {user.data_limit_gb ? `${user.data_limit_gb} GB` : '∞'}
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Status">
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <span style={{ 
-                          padding: '2px 6px', 
-                          borderRadius: '4px', 
-                          fontSize: '0.75rem', 
-                          fontWeight: 'bold',
-                          color: '#fff',
-                          textAlign: 'center',
-                          backgroundColor: user.status === 'active' ? '#10b981' : user.status === 'expired' ? '#ef4444' : '#f59e0b'
-                        }}>
+                        <span className={`status-badge ${user.status === 'active' ? 'status-active' : user.status === 'expired' ? 'status-expired' : 'status-suspended'}`}>
                           {user.status ? user.status.toUpperCase() : 'ACTIVE'}
                         </span>
                         <span style={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center' }}>
@@ -760,31 +752,31 @@ function App() {
                         </span>
                       </div>
                     </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <td data-label="Action">
+                      <div className="action-buttons">
                         <button 
-                          className="btn" 
-                          style={{ padding: '0.5rem', background: user.status === 'suspended' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)', color: user.status === 'suspended' ? '#10b981' : '#f59e0b' }}
+                          className="btn-icon" 
+                          style={{ color: user.status === 'suspended' ? '#10b981' : '#f59e0b' }}
                           onClick={() => handleToggleStatus(user.id, user.status)}
                           title={user.status === 'suspended' ? 'Resume User' : 'Suspend User'}
                         >
-                          {user.status === 'suspended' ? <Play size={16} /> : <Pause size={16} />}
+                          {user.status === 'suspended' ? <Play size={18} /> : <Pause size={18} />}
                         </button>
                         <button 
-                          className="btn" 
-                          style={{ padding: '0.5rem', background: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6' }}
+                          className="btn-icon" 
+                          style={{ color: '#3b82f6' }}
                           onClick={() => openEditModal(user)}
                           title="Edit User"
                         >
-                          <Edit size={16} />
+                          <Edit size={18} />
                         </button>
                         <button 
-                          className="btn btn-danger" 
-                          style={{ padding: '0.5rem' }}
+                          className="btn-icon" 
+                          style={{ color: '#ef4444' }}
                           onClick={() => handleDeleteUser(user.id)}
                           title="Delete User"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </td>
