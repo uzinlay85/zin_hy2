@@ -165,6 +165,11 @@ EOF'
 (Code များကို Github မှ ဆွဲယူ၍ Backend ကို စတင်ပါ)
 ```bash
 git clone https://github.com/uzinlay85/zin_hy2.git
+
+# အရေးကြီး - Database ဖန်တီးခွင့်ရရန် Permission အရင်ပေးရပါမည်
+sudo chown -R $USER:$USER ~/zin_hy2
+sudo chmod 777 ~/zin_hy2/backend
+
 cd zin_hy2/backend
 npm install
 pm2 start server.js --name hysteria-ui
