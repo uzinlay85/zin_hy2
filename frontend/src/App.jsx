@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trash2, Copy, Plus, Server, User, Key, Check, Settings, LogOut, Lock, Dices, Pause, Play, Edit, Download, Upload } from 'lucide-react';
+import { Trash2, Copy, Plus, Server, User, Key, Check, Settings, LogOut, Lock, Dices, Pause, Play, Edit, Download, Upload, X } from 'lucide-react';
 
 function App() {
   // Auth state
@@ -444,8 +444,19 @@ function App() {
       {/* Settings Modal */}
       {showSettings && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', margin: '1rem', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h2>Change Admin Credentials</h2>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', margin: '1rem', maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
+            <button 
+              onClick={() => setShowSettings(false)} 
+              style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', borderRadius: '50%' }}
+              onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+              onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+            >
+              <X size={20} />
+            </button>
+            
+            <h2 style={{ marginTop: '0.5rem', marginBottom: '1.5rem', paddingRight: '2rem' }}>Settings</h2>
+            
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#60a5fa' }}>Admin Credentials</h3>
             <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
               <input
                 type="text"
@@ -468,7 +479,7 @@ function App() {
               </button>
             </form>
 
-            <h2 style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem' }}>Username Prefix</h2>
+            <h3 style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem', fontSize: '1.1rem', marginBottom: '1rem', color: '#60a5fa' }}>Username Prefix</h3>
             <form onSubmit={handleChangePrefix} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <input
                 type="text"
@@ -477,17 +488,12 @@ function App() {
                 value={adminPrefixInput}
                 onChange={(e) => setAdminPrefixInput(e.target.value)}
               />
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-                <button type="button" className="btn btn-danger" style={{ flex: 1 }} onClick={() => setShowSettings(false)}>
-                  Close
-                </button>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>
-                  Save Prefix
-                </button>
-              </div>
+              <button type="submit" className="btn btn-primary" style={{ justifyContent: 'center' }}>
+                Save Prefix
+              </button>
             </form>
 
-            <h2 style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem', marginTop: '1.5rem' }}>Backup & Restore</h2>
+            <h3 style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem', marginTop: '1.5rem', fontSize: '1.1rem', marginBottom: '1rem', color: '#60a5fa' }}>Backup & Restore</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1rem' }}>
               <button type="button" className="btn" onClick={handleBackup} style={{ justifyContent: 'center', background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.5)' }}>
                 <Download size={18} /> Download Backup
