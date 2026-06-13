@@ -49,10 +49,14 @@ app.set('trust proxy', 1);
   try {
     let domain = 'your-domain.com';
     try {
-      const nginxConfig = fs.readFileSync('/etc/nginx/sites-available/default', 'utf8');
-      const match = nginxConfig.match(/server_name\s+([a-zA-Z0-9.-]+)/);
-      if (match && match[1] && match[1] !== '_' && match[1] !== 'your-domain.com') {
-          domain = match[1].trim();
+      const files = fs.readdirSync('/etc/nginx/sites-enabled/');
+      for (const file of files) {
+          const nginxConfig = fs.readFileSync(path.join('/etc/nginx/sites-enabled/', file), 'utf8');
+          const match = nginxConfig.match(/server_name\s+([a-zA-Z0-9.-]+)/);
+          if (match && match[1] && match[1] !== '_' && match[1] !== 'your-domain.com') {
+              domain = match[1].trim();
+              break;
+          }
       }
     } catch (e) {}
 

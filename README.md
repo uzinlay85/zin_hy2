@@ -161,8 +161,8 @@ EOF'
 ```
 *Reload UFW: `sudo ufw reload`*
 
-### 7. Clone Repository & Setup Web UI Backend / Web UI စတင်ခြင်း
-(Code များကို Github မှ ဆွဲယူ၍ Backend ကို စတင်ပါ)
+### 7. Clone Repository & Install Dependencies / Code များရယူခြင်း
+(Code များကို Github မှ ဆွဲယူ၍ လိုအပ်သည်များ သွင်းပါမည်)
 ```bash
 git clone https://github.com/uzinlay85/zin_hy2.git
 
@@ -170,8 +170,23 @@ git clone https://github.com/uzinlay85/zin_hy2.git
 sudo chown -R $USER:$USER ~/zin_hy2
 sudo chmod 777 ~/zin_hy2/backend
 
-cd zin_hy2/backend
+# Backend Packages များ သွင်းမည်
+cd ~/zin_hy2/backend
 npm install
+```
+
+### 8. Build the Frontend (React) / Frontend ကို Build လုပ်ခြင်း
+(Backend မစတင်မီ Error မတက်စေရန် Frontend ကို အရင် Build လုပ်ပါမည်)
+```bash
+cd ~/zin_hy2/frontend
+npm install
+npm run build
+```
+
+### 9. Start the Backend / Web UI ကို စတင်ခြင်း
+(အရာအားလုံး အသင့်ဖြစ်ပြီဆိုလျှင် Backend ကို စတင်ပါမည်)
+```bash
+cd ~/zin_hy2/backend
 pm2 start server.js --name hysteria-ui
 pm2 save
 pm2 startup
@@ -184,12 +199,9 @@ pm2 startup
 > 
 > *(Note: `pm2 startup` will output a `sudo env PATH...` command. **Copy and run that exact command**, then run **`pm2 save`** again. This is required to enable auto-start on reboot!)*
 
-### 8. Build the Frontend (React) / Frontend ကို Build လုပ်ခြင်း
-(Web UI ထွက်လာရန်အတွက် Frontend ကို အောက်ပါအတိုင်း Build လုပ်ပေးပါ)
+**Database အား မှန်ကန်စွာ နေရာချထားနိုင်ရန် Restart ချပါ -**
 ```bash
-cd ../frontend
-npm install
-npm run build
+pm2 restart hysteria-ui
 ```
 
 ---
@@ -331,3 +343,35 @@ The system also includes **Rate Limiting**, which will permanently block any IP 
 
 ## License
 MIT License
+
+---
+
+## How to Uninstall (စနစ်တစ်ခုလုံးကို အရှင်း ဖြုတ်ချနည်း)
+
+If you want to completely remove Hysteria 2 and the Web UI from your server, run the following commands step-by-step:
+(Hysteria 2 နှင့် Web UI စနစ်တစ်ခုလုံးကို ဆာဗာမှ အစအနမကျန် အရှင်း ဖြုတ်ချလိုပါက အောက်ပါ Command များကို တစ်ပိုင်းချင်းစီ Run ပေးပါ)
+
+**1. Remove Web UI & Database:**
+```bash
+pm2 stop hysteria-ui
+pm2 delete hysteria-ui
+pm2 save
+rm -rf ~/zin_hy2
+```
+
+**2. Remove Hysteria 2 Server:**
+```bash
+sudo systemctl stop hysteria-server
+sudo systemctl disable hysteria-server
+sudo rm -f /etc/systemd/system/hysteria-server.service
+sudo rm -rf /etc/hysteria
+sudo rm -f /usr/local/bin/hysteria
+sudo systemctl daemon-reload
+```
+
+**3. Remove Nginx Configuration (Optional):**
+```bash
+sudo rm -f /etc/nginx/sites-available/default
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo systemctl restart nginx
+```
