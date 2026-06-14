@@ -59,7 +59,11 @@ sudo docker run -it ghcr.io/w0rng/amnezia-wg-easy wgpw 'YOUR_PASSWORD'
 
 ## **အဆင့် (၄) - Amnezia-WG-Easy ကို Run ခြင်း**
 
-အောက်ပါ Command တစ်ခုလုံးကို Copy ကူးပါ။ သို့သော် မ Run ခင် `PASSWORD_HASH` နေရာတွင် အဆင့် (၃) မှ ရလာသော Hash Code အရှည်ကြီးကို အစားထိုးထည့်သွင်းပေးပါ။ (Domain ပြောင်းလိုပါက `WG_HOST` တွင် ပြောင်းပါ)။
+အောက်ပါ Command တစ်ခုလုံးကို Copy ကူးပါ။ သို့သော် မ Run ခင် `PASSWORD_HASH` နေရာတွင် အဆင့် (၃) မှ ရလာသော Hash Code အရှည်ကြီးကို အစားထိုးထည့်သွင်းပေးပါ။
+
+> [!WARNING]
+> **Domain ပြောင်းရန် အလွန်အရေးကြီးပါသည်!**
+> အောက်ပါ Command ထဲရှိ `sgvpn26.truehand.top` နေရာတွင် သင် အမှန်တကယ် အသုံးပြုမည့် Domain အမည်ကို မပျက်မကွက် အစားထိုး ပြင်ဆင်ပြီးမှ Terminal တွင် Run ပါ။
 
 ```bash
 sudo docker run -d \
@@ -108,7 +112,11 @@ sudo apt install nginx certbot python3-certbot-nginx -y
 ```
 
 **၂။ Nginx Config ဖိုင် အသစ်ဖန်တီးရန် -** 
-*(အောက်ပါ Command တွင် မိမိ၏ Domain ကို လိုအပ်ပါက ပြောင်းလဲပြီး Terminal တွင် Paste ချပါ)*
+
+> [!WARNING]
+> **Domain ပြောင်းရန် အလွန်အရေးကြီးပါသည်!**
+> အောက်ပါ Command တွင် `sgvpn26.truehand.top` နေရာ၌ သင်၏ Domain အမည်အမှန်ကို အတိအကျ အစားထိုးပြီးမှ Terminal တွင် Paste ချပါ။
+
 ```bash
 sudo bash -c 'cat << "EOF" > /etc/nginx/sites-available/amnezia
 server {
@@ -138,6 +146,11 @@ sudo systemctl restart nginx
 ```
 
 **၄။ SSL (HTTPS) လုံခြုံရေးလက်မှတ် တောင်းယူရန် -**
+
+> [!WARNING]
+> **Domain ပြောင်းရန် အလွန်အရေးကြီးပါသည်!**
+> အောက်ပါ Command တွင်လည်း `sgvpn26.truehand.top` နေရာ၌ သင်၏ Domain အမည်အမှန်ကို အတိအကျ အစားထိုးပြီးမှ Run ပါ။
+
 ```bash
 sudo certbot --nginx -d sgvpn26.truehand.top
 ```

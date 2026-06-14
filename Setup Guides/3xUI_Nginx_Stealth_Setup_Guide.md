@@ -33,6 +33,11 @@ sudo x-ui restart
 (အောက်ပါ Command တွင် `sgvless.yourdomain.com` နေရာ၌ မိမိ၏ Domain အသစ်ကို ပြောင်းထည့်ပါ)
 
 **၁။ Nginx ဖိုင်အသစ် တည်ဆောက်ခြင်း**
+
+> [!WARNING]
+> **Domain ပြောင်းရန် အလွန်အရေးကြီးပါသည်!**
+> အောက်ပါ Command တွင် `sgvless.yourdomain.com` နေရာ၌ သင်၏ Domain အမည်အသစ်ကို အတိအကျ အစားထိုးပြီးမှ Terminal တွင် Paste ချပါ။
+
 ```bash
 sudo bash -c 'cat << "EOF" > /etc/nginx/sites-available/sgvless
 server {
@@ -63,6 +68,11 @@ EOF'
 ```
 
 **၂။ Nginx အား အသက်သွင်းပြီး SSL တောင်းခံခြင်း**
+
+> [!WARNING]
+> **Domain ပြောင်းရန် အလွန်အရေးကြီးပါသည်!**
+> အောက်ပါ Command တွင်လည်း `sgvless.yourdomain.com` နေရာ၌ သင်၏ Domain အမည်အမှန်ကို အတိအကျ အစားထိုးပြီးမှ Run ပါ။
+
 ```bash
 sudo ln -s /etc/nginx/sites-available/sgvless /etc/nginx/sites-enabled/
 sudo nginx -t

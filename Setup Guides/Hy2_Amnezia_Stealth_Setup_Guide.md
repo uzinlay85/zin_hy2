@@ -31,6 +31,11 @@ sudo npm install -g pm2
 Amnezia ၏ ဖွဲ့စည်းပုံများ မပျက်စေရန် Nginx ဖိုင်နာမည်ကို သီးသန့်ပေး၍ တည်ဆောက်ပါမည်။
 
 **၁။ Nginx ဖိုင်အသစ် တည်ဆောက်ခြင်း**
+
+> [!WARNING]
+> **Domain ပြောင်းရန် အလွန်အရေးကြီးပါသည်!**
+> အောက်ပါ Command ထဲရှိ `hy2sv3.truehand.top` နေရာတွင် သင် အမှန်တကယ် အသုံးပြုမည့် Domain အမည်ကို မပျက်မကွက် အစားထိုး ပြင်ဆင်ပြီးမှ Copy ကူး၍ Terminal တွင် ထည့်ပါ။
+
 ```bash
 sudo bash -c 'cat << "EOF" > /etc/nginx/sites-available/hy2sv3
 server {
@@ -61,6 +66,10 @@ sudo systemctl restart nginx
 ## အဆင့် (၃) - SSL Certificate အခမဲ့ ရယူခြင်း
 
 Nginx အသက်ဝင်သွားပါက Certbot ဖြင့် လုံခြုံရေး Certificate တောင်းခံပါမည်။
+
+> [!WARNING]
+> **Domain ပြောင်းရန် အလွန်အရေးကြီးပါသည်!**
+> အောက်ပါ Command တွင်လည်း `hy2sv3.truehand.top` နေရာ၌ သင်၏ Domain အမည်အမှန်ကို အတိအကျ အစားထိုးပြီးမှ Run ပါ။
 
 ```bash
 sudo certbot --nginx -d hy2sv3.truehand.top
@@ -94,6 +103,11 @@ bash <(curl -fsSL https://get.hy2.sh/)
 ```
 
 **၂။ ဖွဲ့စည်းပုံ (Config) ဖိုင် တည်ဆောက်ခြင်း:**
+
+> [!WARNING]
+> **Domain ပြောင်းရန် အလွန်အရေးကြီးပါသည်!**
+> အောက်ပါ Command ထဲရှိ `hy2sv3.truehand.top` (နေရာ ၂ ခု) တွင် သင်၏ Domain အမည်အမှန်ကို အတိအကျ အစားထိုးပြီးမှ Copy ကူးထည့်ပါ။
+
 ```bash
 sudo bash -c 'cat << "EOF" > /etc/hysteria/config.yaml
 listen: :443

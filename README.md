@@ -43,7 +43,9 @@ sudo npm install -g pm2
 Create a new Nginx configuration to serve the Web UI on Port 80.
 (Web UI ကို Domain ဖြင့် ခေါ်နိုင်ရန် Nginx တွင် အောက်ပါ Command ဖြင့် အလွယ်တကူ ထည့်သွင်းပါ)
 
-> **📝 မှတ်ချက်:** အောက်ပါ Command မှ `your-domain.com` နေရာတွင် မိမိ၏ Domain အမှန်ကို အစားထိုးပြီးမှ Copy ကူးထည့်ပါ။
+> [!WARNING]
+> **Domain ပြောင်းရန် အလွန်အရေးကြီးပါသည်!**
+> အောက်ပါ Command မှ `your-domain.com` နေရာတွင် သင် အမှန်တကယ် အသုံးပြုမည့် မိမိ၏ Domain အမည်ကို မပျက်မကွက် အစားထိုးပြီးမှသာ Copy ကူး၍ Terminal တွင် ထည့်ပါ။
 
 ```bash
 sudo bash -c 'cat << "EOF" > /etc/nginx/sites-available/zin_hy2
@@ -108,7 +110,9 @@ bash <(curl -fsSL https://get.hy2.sh/)
 Edit your Hysteria 2 configuration file (`/etc/hysteria/config.yaml`):
 (Hysteria ရဲ့ Config ဖိုင်ထဲတွင် Certbot မှ ရလာသော Cert လမ်းကြောင်းများကို အစားထိုး ထည့်သွင်းပေးရန် အောက်ပါ Command ဖြင့် အလွယ်တကူ ထည့်ပါ)
 
-> **📝 မှတ်ချက်:** အောက်ပါ Command မှ `your-domain.com` နေရာတွင် မိမိ၏ Domain အမှန်ကို အစားထိုးပြီးမှ Copy ကူးထည့်ပါ။
+> [!WARNING]
+> **Domain ပြောင်းရန် အလွန်အရေးကြီးပါသည်!**
+> အောက်ပါ Command တွင်လည်း `your-domain.com` (နေရာ ၂ ခု) တွင် သင်၏ Domain အမည်အမှန်ကို အတိအကျ အစားထိုးပြီးမှ Copy ကူးထည့်ပါ။ (အပေါ် Nginx တွင် သုံးခဲ့သော Domain နှင့် တစ်ထပ်တည်း တူညီရပါမည်)။
 
 ```bash
 sudo bash -c 'cat << "EOF" > /etc/hysteria/config.yaml
