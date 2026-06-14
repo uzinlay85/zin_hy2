@@ -1,6 +1,6 @@
 # Amnezia-WG-Easy အပြည့်အစုံ တပ်ဆင်နည်း လမ်းညွှန်
 
-ဒီလမ်းညွှန်က သင့်ရဲ့ Domain (`sgvpn26.truehand.top` သို့မဟုတ် မိမိပိုင် Domain) ကို အသုံးပြုပြီး **Amnezia-WG-Easy** စနစ်ကို Ubuntu/Debian ဆာဗာပေါ်မှာ အမှားအယွင်းမရှိ (Error-free) အပြည့်အစုံ တပ်ဆင်နည်း ဖြစ်ပါတယ်။
+ဒီလမ်းညွှန်က သင့်ရဲ့ Domain (`vpn.yourdomain.com` သို့မဟုတ် မိမိပိုင် Domain) ကို အသုံးပြုပြီး **Amnezia-WG-Easy** စနစ်ကို Ubuntu/Debian ဆာဗာပေါ်မှာ အမှားအယွင်းမရှိ (Error-free) အပြည့်အစုံ တပ်ဆင်နည်း ဖြစ်ပါတယ်။
 
 > [!IMPORTANT]
 > မစတင်မီ Cloudflare (သို့) သင်၏ Domain Control Panel တွင် Domain ကို သင့်ဆာဗာ IP သို့ ညွှန်ထားပြီး၊ **Proxy Status ကို DNS Only (တိမ်တိုက်အမည်း/မီးခိုးရောင်)** အဖြစ် ပြောင်းထားရန် မမေ့ပါနဲ့။
@@ -63,12 +63,12 @@ sudo docker run -it ghcr.io/w0rng/amnezia-wg-easy wgpw 'YOUR_PASSWORD'
 
 > [!WARNING]
 > **Domain ပြောင်းရန် အလွန်အရေးကြီးပါသည်!**
-> အောက်ပါ Command ထဲရှိ `sgvpn26.truehand.top` နေရာတွင် သင် အမှန်တကယ် အသုံးပြုမည့် Domain အမည်ကို မပျက်မကွက် အစားထိုး ပြင်ဆင်ပြီးမှ Terminal တွင် Run ပါ။
+> အောက်ပါ Command ထဲရှိ `vpn.yourdomain.com` နေရာတွင် သင် အမှန်တကယ် အသုံးပြုမည့် Domain အမည်ကို မပျက်မကွက် အစားထိုး ပြင်ဆင်ပြီးမှ Terminal တွင် Run ပါ။
 
 ```bash
 sudo docker run -d \
   --name=amnezia-wg-easy \
-  -e WG_HOST=sgvpn26.truehand.top \
+  -e WG_HOST=vpn.yourdomain.com \
   -e PASSWORD_HASH='အဆင့်(၃)မှ_ရလာသော_HASH_CODE_ကို_ဒီမှာထည့်ပါ' \
   -e PORT=51831 \
   -e WG_PORT=58210 \
@@ -115,13 +115,13 @@ sudo apt install nginx certbot python3-certbot-nginx -y
 
 > [!WARNING]
 > **Domain ပြောင်းရန် အလွန်အရေးကြီးပါသည်!**
-> အောက်ပါ Command တွင် `sgvpn26.truehand.top` နေရာ၌ သင်၏ Domain အမည်အမှန်ကို အတိအကျ အစားထိုးပြီးမှ Terminal တွင် Paste ချပါ။
+> အောက်ပါ Command တွင် `vpn.yourdomain.com` နေရာ၌ သင်၏ Domain အမည်အမှန်ကို အတိအကျ အစားထိုးပြီးမှ Terminal တွင် Paste ချပါ။
 
 ```bash
 sudo bash -c 'cat << "EOF" > /etc/nginx/sites-available/amnezia
 server {
     listen 80;
-    server_name sgvpn26.truehand.top;
+    server_name vpn.yourdomain.com;
     
     location / {
         proxy_pass http://127.0.0.1:51831;
@@ -149,10 +149,10 @@ sudo systemctl restart nginx
 
 > [!WARNING]
 > **Domain ပြောင်းရန် အလွန်အရေးကြီးပါသည်!**
-> အောက်ပါ Command တွင်လည်း `sgvpn26.truehand.top` နေရာ၌ သင်၏ Domain အမည်အမှန်ကို အတိအကျ အစားထိုးပြီးမှ Run ပါ။
+> အောက်ပါ Command တွင်လည်း `vpn.yourdomain.com` နေရာ၌ သင်၏ Domain အမည်အမှန်ကို အတိအကျ အစားထိုးပြီးမှ Run ပါ။
 
 ```bash
-sudo certbot --nginx -d sgvpn26.truehand.top
+sudo certbot --nginx -d vpn.yourdomain.com
 ```
 *(Certbot မှ Email တောင်းလျှင် ထည့်ပေးပြီး၊ Terms and Conditions ကို `Y` နှိပ်၍ သဘောတူပေးပါ။)*
 
@@ -160,6 +160,6 @@ sudo certbot --nginx -d sgvpn26.truehand.top
 
 ## **ပြီးဆုံးပါပြီ 🎉**
 
-အခုဆိုရင် သင့်ရဲ့ Browser ထဲမှာ **`https://sgvpn26.truehand.top`** လို့ ရိုက်ထည့်လိုက်တာနဲ့ Amnezia Web UI လေး ပွင့်လာပါလိမ့်မယ်။
+အခုဆိုရင် သင့်ရဲ့ Browser ထဲမှာ **`https://vpn.yourdomain.com`** လို့ ရိုက်ထည့်လိုက်တာနဲ့ Amnezia Web UI လေး ပွင့်လာပါလိမ့်မယ်။
 
 အဆင့် (၃) တုန်းက သတ်မှတ်ခဲ့တဲ့ သင်၏ **စကားဝှက် (Password) အစစ်** ကို ရိုက်ထည့်ပြီး ဝင်ရောက်နိုင်ပါတယ်။ အထဲရောက်ရင် `+ New Client` ကို နှိပ်ပြီး VPN အကောင့်အသစ်များ အလွယ်တကူ ဖန်တီး အသုံးပြုနိုင်ပါပြီ!

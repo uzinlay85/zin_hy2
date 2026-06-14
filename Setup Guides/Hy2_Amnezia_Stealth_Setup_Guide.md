@@ -1,7 +1,7 @@
 # Hysteria 2 (Zin Panel) + Amnezia WG တွဲဖက်တပ်ဆင်နည်း လမ်းညွှန်
 
 ဒီလမ်းညွှန်သည် ဆာဗာတွင် Amnezia WG ရှိပြီးသား အခြေအနေတွင် အခြားစနစ်များကို မထိခိုက်စေဘဲ **Hysteria 2 နှင့် Web UI Panel** ကို လုံခြုံစွာ တွဲဖက်တပ်ဆင်မည့် နည်းလမ်းဖြစ်ပါသည်။ 
-(Domain အနေဖြင့် `hy2sv3.truehand.top` ကို အသုံးပြုသွားမည် ဖြစ်ပါသည်)
+(Domain အနေဖြင့် `hy2.yourdomain.com` ကို အသုံးပြုသွားမည် ဖြစ်ပါသည်)
 
 > [!IMPORTANT]
 > မစတင်မီ Cloudflare တွင် `hy2sv3` အား A Record ဖြင့် ဆာဗာ IP သို့ ညွှန်ထားပြီး၊ **Proxy Status ကို DNS Only (တိမ်တိုက်အမည်း)** ထားရှိရန် လိုအပ်ပါသည်။
@@ -34,13 +34,13 @@ Amnezia ၏ ဖွဲ့စည်းပုံများ မပျက်စေ�
 
 > [!WARNING]
 > **Domain ပြောင်းရန် အလွန်အရေးကြီးပါသည်!**
-> အောက်ပါ Command ထဲရှိ `hy2sv3.truehand.top` နေရာတွင် သင် အမှန်တကယ် အသုံးပြုမည့် Domain အမည်ကို မပျက်မကွက် အစားထိုး ပြင်ဆင်ပြီးမှ Copy ကူး၍ Terminal တွင် ထည့်ပါ။
+> အောက်ပါ Command ထဲရှိ `hy2.yourdomain.com` နေရာတွင် သင် အမှန်တကယ် အသုံးပြုမည့် Domain အမည်ကို မပျက်မကွက် အစားထိုး ပြင်ဆင်ပြီးမှ Copy ကူး၍ Terminal တွင် ထည့်ပါ။
 
 ```bash
 sudo bash -c 'cat << "EOF" > /etc/nginx/sites-available/hy2sv3
 server {
     listen 80;
-    server_name hy2sv3.truehand.top; 
+    server_name hy2.yourdomain.com; 
 
     location / {
         proxy_pass http://127.0.0.1:3000;
@@ -69,10 +69,10 @@ Nginx အသက်ဝင်သွားပါက Certbot ဖြင့် လု�
 
 > [!WARNING]
 > **Domain ပြောင်းရန် အလွန်အရေးကြီးပါသည်!**
-> အောက်ပါ Command တွင်လည်း `hy2sv3.truehand.top` နေရာ၌ သင်၏ Domain အမည်အမှန်ကို အတိအကျ အစားထိုးပြီးမှ Run ပါ။
+> အောက်ပါ Command တွင်လည်း `hy2.yourdomain.com` နေရာ၌ သင်၏ Domain အမည်အမှန်ကို အတိအကျ အစားထိုးပြီးမှ Run ပါ။
 
 ```bash
-sudo certbot --nginx -d hy2sv3.truehand.top
+sudo certbot --nginx -d hy2.yourdomain.com
 ```
 *(မေးခွန်းများမေးလာပါက သင့် Email ကိုထည့်ပါ၊ `Y` ကိုရွေးပါ။ HTTP to HTTPS Redirect လုပ်ရန် မေးလျှင် **Redirect (2)** ကို ရွေးပါ)*
 
@@ -106,15 +106,15 @@ bash <(curl -fsSL https://get.hy2.sh/)
 
 > [!WARNING]
 > **Domain ပြောင်းရန် အလွန်အရေးကြီးပါသည်!**
-> အောက်ပါ Command ထဲရှိ `hy2sv3.truehand.top` (နေရာ ၂ ခု) တွင် သင်၏ Domain အမည်အမှန်ကို အတိအကျ အစားထိုးပြီးမှ Copy ကူးထည့်ပါ။
+> အောက်ပါ Command ထဲရှိ `hy2.yourdomain.com` (နေရာ ၂ ခု) တွင် သင်၏ Domain အမည်အမှန်ကို အတိအကျ အစားထိုးပြီးမှ Copy ကူးထည့်ပါ။
 
 ```bash
 sudo bash -c 'cat << "EOF" > /etc/hysteria/config.yaml
 listen: :443
 
 tls:
-  cert: /etc/letsencrypt/live/hy2sv3.truehand.top/fullchain.pem
-  key: /etc/letsencrypt/live/hy2sv3.truehand.top/privkey.pem
+  cert: /etc/letsencrypt/live/hy2.yourdomain.com/fullchain.pem
+  key: /etc/letsencrypt/live/hy2.yourdomain.com/privkey.pem
 
 auth:
   type: http
