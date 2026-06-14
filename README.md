@@ -46,7 +46,7 @@ Create a new Nginx configuration to serve the Web UI on Port 80.
 > **📝 မှတ်ချက်:** အောက်ပါ Command မှ `your-domain.com` နေရာတွင် မိမိ၏ Domain အမှန်ကို အစားထိုးပြီးမှ Copy ကူးထည့်ပါ။
 
 ```bash
-sudo bash -c 'cat << "EOF" > /etc/nginx/sites-available/default
+sudo bash -c 'cat << "EOF" > /etc/nginx/sites-available/zin_hy2
 server {
     listen 80;
     server_name your-domain.com; 
@@ -60,8 +60,12 @@ server {
     }
 }
 EOF'
+
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo ln -s /etc/nginx/sites-available/zin_hy2 /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
 ```
-*Restart Nginx: `sudo systemctl restart nginx`*
 
 ### 3. Generate Free SSL Certificate (HTTPS) / လုံခြုံရေး Certificate ရယူခြင်း
 Run Certbot to automatically generate SSL certificates for your Nginx configuration:
