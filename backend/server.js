@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const crypto = require('crypto');
 const rateLimitPkg = require('express-rate-limit');
 const rateLimit = rateLimitPkg.rateLimit || rateLimitPkg.default || rateLimitPkg;
@@ -188,6 +189,51 @@ app.post('/api/admin/settings', authenticateToken, async (req, res) => {
 // ==========================================
 // Web UI Management API Endpoints (Protected)
 // ==========================================
+
+// Helper function to calculate CPU usage
+function getCpuUsagePromise() {
+  return new Promise((resolve) => {
+    const startMeasure = os.cpus().map(cpu => cpu.times);
+    setTimeout(() => {
+      const endMeasure = os.cpus().map(cpu => cpu.times);
+      let totalDiff = 0;
+      let idleDiff = 0;
+      
+      for (let i = 0; i < startMeasure.length; i++) {
+        const start = startMeasure[i];
+        const end = endMeasure[i];
+        
+        const startTotal = Object.values(start).reduce((a, b) => a + b, 0);
+        const endTotal = Object.values(end).reduce((a, b) => a + b, 0);
+        
+        totalDiff += (endTotal - startTotal);
+        idleDiff += (end.idle - start.idle);
+      }
+      
+      if (totalDiff === 0) return resolve(0);
+      const cpuUsage = 100 - Math.round((100 * idleDiff) / totalDiff);
+      resolve(cpuUsage);
+    }, 150);
+  });
+}
+
+// Get system status (CPU/RAM)
+app.get('/api/status', authenticateToken, async (req, res) => {
+  try {
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const usedMem = totalMem - freeMem;
+    const ramUsage = parseFloat(((usedMem / totalMem) * 100).toFixed(1));
+    const cpuUsage = await getCpuUsagePromise();
+    
+    res.json({
+      cpu: cpuUsage,
+      ram: ramUsage
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to retrieve system status' });
+  }
+});
 
 // Get all users
 app.get('/api/users', authenticateToken, (req, res) => {
