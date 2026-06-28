@@ -199,3 +199,85 @@ ssh -p 2213 zinko@သင့်_Server_IP_Address
 အောင်မြင်စွာ ဝင်ရောက်နိုင်ပြီဆိုမှသာ မူလ Root Terminal ကြီးကို ပိတ်လိုက်ပါ။ 
 
 > **ဂုဏ်ယူပါသည်။** ယခုဆိုလျှင် သင်၏ Server သည် ပုံမှန်ထက် များစွာပိုမိုလုံခြုံသော Safenet Security Baseline ကို အောင်မြင်စွာ တပ်ဆင်ပြီးစီးသွားပြီ ဖြစ်ပါသည်။
+
+---
+
+## အဆင့် (၄) - အားလုံးမှန်ကန်မှုရှိမရှိ အလိုအလျောက် စစ်ဆေးခြင်း (Verification)
+User အသစ်ဖြင့် ဝင်ရောက်ပြီးသည့်အခါ လုံခြုံရေးအဆင့်မြှင့်တင်မှုများ အားလုံး အလုပ်လုပ်ခြင်း ရှိမရှိကို အောက်ပါ Verification Script ဖြင့် အလွယ်တကူ စစ်ဆေးနိုင်ပါသည်။
+
+၁။ သင်၏ User အသစ် (ဥပမာ - `zinko`) ဖြင့် ဆာဗာသို့ ဝင်ရောက်ပါ။
+၂။ Terminal တွင် အောက်ပါ Script အပြည့်အစုံကို Copy ကူးထည့်ပြီး `Enter` ခေါက်ပါ။
+
+```bash
+cat > verify_security.sh <<'EOF'
+#!/usr/bin/env bash
+
+echo "==============================================="
+echo "   Safenet Security Baseline - Verification    "
+echo "==============================================="
+
+echo "[1] Current User စစ်ဆေးခြင်း..."
+if [ "$USER" = "root" ]; then
+    echo "❌ သတိ: သင်သည် root ဖြင့် ဝင်ရောက်နေပါသည်။ zinko ဖြင့် ဝင်ပါ။"
+else
+    echo "✅ လက်ရှိ User: $USER (Root မဟုတ်ပါ - မှန်ကန်သည်)"
+fi
+
+echo ""
+echo "[2] Sudo (Admin) အခွင့်အရေး စစ်ဆေးခြင်း..."
+if groups "$USER" | grep -q '\bsudo\b'; then
+    echo "✅ '$USER' သည် 'sudo' အုပ်စုတွင် ပါဝင်ပါသည်။ (Admin အခွင့်အရေးရှိသည်)"
+else
+    echo "❌ '$USER' သည် 'sudo' အုပ်စုတွင် မပါဝင်ပါ။"
+fi
+
+echo ""
+echo "[3] Timezone စစ်ဆေးခြင်း..."
+TZ=$(timedatectl | grep "Time zone" | awk '{print $3}')
+if [ "$TZ" = "Asia/Yangon" ]; then
+    echo "✅ Timezone: $TZ (မှန်ကန်သည်)"
+else
+    echo "❌ Timezone: $TZ (Asia/Yangon မဟုတ်ပါ)"
+fi
+
+echo ""
+echo "[4] Swap Memory စစ်ဆေးခြင်း..."
+SWAP_SIZE=$(free -h | awk '/^Swap:/ {print $2}')
+if [ "$SWAP_SIZE" != "0B" ] && [ "$SWAP_SIZE" != "0.0K" ]; then
+    echo "✅ Swap Memory အလုပ်လုပ်နေပါသည်။ (Total: $SWAP_SIZE)"
+else
+    echo "❌ Swap Memory မရှိပါ။"
+fi
+
+echo ""
+echo "[5] SSH Hardening လုံခြုံရေး စစ်ဆေးခြင်း..."
+SSH_CONF="/etc/ssh/sshd_config.d/99-safenet-hardening.conf"
+if [ -f "$SSH_CONF" ]; then
+    echo "✅ SSH Config အသစ် တွေ့ရှိပါသည်။ အောက်ပါလုံခြုံရေးများ ပိတ်ထားပါသည် -"
+    grep -E '^(Port|PasswordAuthentication|PermitRootLogin)' $SSH_CONF | while read -r line; do
+        echo "   👉 $line"
+    done
+else
+    echo "❌ SSH Config အသစ် မတွေ့ပါ။"
+fi
+
+echo ""
+echo "[6] UFW (Firewall) Status စစ်ဆေးခြင်း..."
+echo "   (Firewall စစ်ဆေးရန် သင့် Password ကို တောင်းပါမည်)"
+sudo ufw status | grep -E 'Status:|2213|80|443|58210'
+
+echo ""
+echo "[7] Fail2Ban (Hacker ကာကွယ်ရေး) စစ်ဆေးခြင်း..."
+sudo fail2ban-client status sshd || echo "❌ Fail2Ban အလုပ်မလုပ်ပါ။"
+
+echo ""
+echo "==============================================="
+echo "✅ စစ်ဆေးခြင်း အောင်မြင်စွာ ပြီးဆုံးပါပြီ!"
+echo "==============================================="
+EOF
+
+bash verify_security.sh
+```
+
+**အထက်ပါ Script အား Run ပြီးပါက -**
+Firewall များကို စစ်ဆေးရန် `sudo` အသုံးပြုထားသဖြင့် သင်၏ Password (zinko ၏ password) ကို တောင်းပါမည်။ စကားဝှက် ရိုက်ထည့်လိုက်သည်နှင့် အားလုံးစစ်ဆေးပြီး အောင်မြင်ကြောင်း အမှန်ခြစ် (✅) များဖြင့် ရှင်းလင်းစွာ ပြသပေးသွားမည် ဖြစ်ပါသည်။
