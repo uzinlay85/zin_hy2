@@ -261,3 +261,32 @@ Database ရွှေ့ပြောင်းခြင်း ပြီးမြ�
    - **Subscription Port:** `ufw allow [ဆာဗာဟောင်းတွင် သုံးခဲ့သော Sub Port]/tcp`
    - **VLESS / Node Ports:** Panel ထဲရှိ Inbound များတွင် သုံးထားသော Port များအားလုံး (ဥပမာ- `443` သို့မဟုတ် တခြား Port များ) ကို `ufw allow [Port နံပါတ်]` ဟု ရိုက်၍ ဖွင့်ပေးရပါမည်။
 4. **SSL Certificate ပြန်ထုတ်ခြင်း:** ဆာဗာသစ် ဖြစ်သွားသည့်အတွက် `x-ui` menu ထဲမှ **Option 19** ကို သုံးပြီး Domain အတွက် SSL Certificate ကို Standalone စနစ်ဖြင့် အသစ်တစ်ကြိမ် ပြန်လည်ထုတ်ယူပေးရပါမယ်ဗျာ။
+
+---
+
+## Phase 9: VLESS + WS + CDN (Cloudflare Proxy) တည်ဆောက်ခြင်း (အလွယ်ကူဆုံးနည်းလမ်း)
+
+အကယ်၍ သင်၏ ဆာဗာ IP သည် အပိတ်ခံရပါက (သို့မဟုတ်) IP ကို ဖုံးကွယ်ထားလိုပါက Cloudflare ရဲ့ လိမ္မော်ရောင်တိမ်တိုက် (Proxy) ကို အသုံးပြုပြီး VLESS+WS ဖြင့် ကျော်လွှားနိုင်ပါသည်။ (ဆာဗာတွင် Certificate သွင်းရန်မလိုသော အလွယ်ကူဆုံး Flexible စနစ်ဖြစ်ပါသည်)။
+
+**အဆင့် ၁: Cloudflare တွင် CDN Domain ခွဲထုတ်ခြင်း**
+3x-ui Panel ဝင်ပေါက် မပိတ်သွားစေရန် မူလ Panel Domain ကို Grey Cloud (မီးခိုးရောင်) အတိုင်းထားပါ။
+VPN အတွက် သီးသန့် Subdomain အသစ်တစ်ခု (ဥပမာ - `cdn.yourdomain.com`) ကို ဖန်တီးပြီး **Proxied (လိမ္မော်ရောင် တိမ်တိုက်)** အဖြစ် ဖွင့်ထားပါ။
+
+**အဆင့် ၂: Cloudflare SSL ကို Flexible သို့ ပြောင်းခြင်း**
+Cloudflare Dashboard မှ **SSL/TLS > Overview** ကို သွားပြီး **Flexible** ကို ရွေးချယ်ပါ။ (ဤသို့လုပ်ခြင်းဖြင့် ဆာဗာတွင် SSL ထည့်ရန်မလိုတော့ပါ)။
+
+**အဆင့် ၃: 3x-ui Panel တွင် Inbound တည်ဆောက်ခြင်း**
+- **Protocol:** `vless`
+- **Port:** **`80`** (UFW တွင် Port 80 ဖွင့်ထားရန် လိုအပ်သည်)
+- **Network:** **`ws`** (WebSocket)
+- **ws Path:** ဥပမာ `/vlessws`
+- **Security (TLS):** **`none`** (TLS ပိတ်ထားပါ)
+- Save လုပ်ပြီး ၎င်း Inbound မှ Link ကို Copy ကူးပါ။
+
+**အဆင့် ၄: Client (ဖုန်း/ကွန်ပျူတာ) တွင် ပြင်ဆင်ခြင်း**
+Copy ကူးလာသော Link ကို NekoBox, v2rayNG စသည်တို့တွင် Import လုပ်ပြီး Edit ပြန်လုပ်ပါ-
+- **Address:** နေရာတွင် လိမ္မော်ရောင် ဖွင့်ထားသော `cdn.yourdomain.com` သို့ ပြောင်းပါ။
+- **Port:** နေရာတွင် 80 အစား **`443`** ဟု ပြောင်းပါ။ (Cloudflare ထံသို့ HTTPS ဖြင့် လုံခြုံစွာ သွားရန်ဖြစ်သည်)
+- **Security:** `none` အစား **`tls`** သို့ ပြောင်းပေးပါ။
+- **SNI နှင့် Request Host:** `cdn.yourdomain.com` ဟု ထည့်ပါ။
+- Save နှိပ်၍ လုံခြုံစွာ ချိတ်ဆက် အသုံးပြုနိုင်ပါပြီ။
