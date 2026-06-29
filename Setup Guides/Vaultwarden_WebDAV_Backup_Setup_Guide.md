@@ -53,8 +53,25 @@ docker run --rm -it ttionya/vaultwarden-backup rclone obscure "သင်၏_webd
 ```
 Command ရိုက်ထည့်ပြီးပါက `mOa...` စသဖြင့် ထူးဆန်းသော စာသားတစ်ခု ထွက်လာပါမည်။ ၎င်းကို Copy ကူးထားပါ။ (အောက်ပါအဆင့် ၇ တွင် အသုံးပြုရန်ဖြစ်သည်)။
 
-## အဆင့် (၇) - docker-compose.yml ဖိုင် ရေးသားခြင်း
-ယခု `docker-compose.yml` ဖိုင်ကို တည်ဆောက်ပါမည်။
+## အဆင့် (၇) - rclone.conf နှင့် docker-compose.yml ဖန်တီးခြင်း
+
+ပထမဦးစွာ Rclone (WebDAV) အတွက် Config ဖိုင်ကို ဖန်တီးပါမည် -
+```bash
+mkdir -p ~/vaultwarden/rclone
+nano ~/vaultwarden/rclone/rclone.conf
+```
+အောက်ပါ Code များကို Copy ကူးထည့်ပါ။ (`user` နှင့် `pass` နေရာတွင် သင့် Koofr Email နှင့် အဆင့် ၆ မှ ရလာသော Obscured Password ကို ထည့်ပါ)
+```ini
+[WebDAV]
+type = webdav
+url = https://app.koofr.net/dav/Koofr
+vendor = other
+user = သင်၏_Koofr_အကောင့်_Email_ကို_ထည့်ပါ
+pass = အဆင့်_၆_မှ_ရရှိလာသော_Obscured_Password_ကို_ဒီမှာထည့်ပါ
+```
+Save လုပ်ရန် `Ctrl + X`, `Y`, `Enter` နှိပ်ပါ။
+
+ထို့နောက် `docker-compose.yml` ဖိုင်ကို တည်ဆောက်ပါမည်။
 ```bash
 nano docker-compose.yml
 ```
@@ -109,14 +126,10 @@ services:
       - BACKUP_KEEP_DAYS=30 # Cloud ပေါ်တွင် ရက် ၃၀ စာ သိမ်းထားမည်
       - RCLONE_REMOTE_NAME=WebDAV
       - RCLONE_REMOTE_DIR=/Vaultwarden_Backups # Cloud ပေါ်ရှိ Folder အမည်
-      # Koofr WebDAV ဆက်တင်များ
-      - RCLONE_CONFIG_WEBDAV_TYPE=webdav
-      - RCLONE_CONFIG_WEBDAV_URL=https://app.koofr.net/dav/Koofr
-      - RCLONE_CONFIG_WEBDAV_VENDOR=other
-      - RCLONE_CONFIG_WEBDAV_USER=သင်၏_Koofr_အကောင့်_Email_ကို_ထည့်ပါ
-      - RCLONE_CONFIG_WEBDAV_PASS=အဆင့်_၆_မှ_ရရှိလာသော_Obscured_Password_ကို_ဒီမှာထည့်ပါ
+      # Koofr WebDAV ကို rclone.conf မှ ဖတ်မည်ဖြစ်၍ ဤနေရာတွင် ထည့်ရန်မလိုတော့ပါ
     volumes:
       - ./vw-data:/bitwarden/data/
+      - ./rclone:/config/
 ```
 ဖိုင်ကို Save လုပ်ရန် `Ctrl + X` ကိုနှိပ်ပါ၊ `Y` ကိုနှိပ်ပါ၊ ထို့နောက် `Enter` ခေါက်ပါ။
 
@@ -213,6 +226,7 @@ fi
 
 # 3. ဖိုင်တွဲများ တည်ဆောက်ခြင်း
 mkdir -p ~/vaultwarden/vw-data
+mkdir -p ~/vaultwarden/rclone
 cd ~/vaultwarden
 
 # 4. လုံခြုံသော Admin Token ကို အလိုအလျောက် ဖန်တီးခြင်း
@@ -223,8 +237,18 @@ ADMIN_TOKEN=$(openssl rand -base64 48)
 echo "WebDAV Password ကို ကုဒ်ဝှက်နေပါသည်..."
 OBSCURED_PASS=$(docker run --rm ttionya/vaultwarden-backup rclone obscure "$WEBDAV_PASS")
 
-# 6. docker-compose.yml ဖိုင်ကို အလိုအလျောက် ဖန်တီးခြင်း
-echo "docker-compose.yml ဖိုင်ကို တည်ဆောက်နေပါသည်..."
+# 6. rclone.conf နှင့် docker-compose.yml ဖိုင်ကို အလိုအလျောက် ဖန်တီးခြင်း
+echo "Config ဖိုင်များကို တည်ဆောက်နေပါသည်..."
+
+cat <<EOF > rclone/rclone.conf
+[WebDAV]
+type = webdav
+url = https://app.koofr.net/dav/Koofr
+vendor = other
+user = $WEBDAV_USER
+pass = $OBSCURED_PASS
+EOF
+
 cat <<EOF > docker-compose.yml
 version: '3'
 services:
@@ -271,13 +295,10 @@ services:
       - BACKUP_KEEP_DAYS=30
       - RCLONE_REMOTE_NAME=WebDAV
       - RCLONE_REMOTE_DIR=/Vaultwarden_Backups
-      - RCLONE_CONFIG_WEBDAV_TYPE=webdav
-      - RCLONE_CONFIG_WEBDAV_URL=https://app.koofr.net/dav/Koofr
-      - RCLONE_CONFIG_WEBDAV_VENDOR=other
-      - RCLONE_CONFIG_WEBDAV_USER=$WEBDAV_USER
-      - RCLONE_CONFIG_WEBDAV_PASS=$OBSCURED_PASS
+      # Configs are loaded from rclone.conf volume
     volumes:
       - ./vw-data:/bitwarden/data/
+      - ./rclone:/config/
 EOF
 
 # 7. စနစ်အား စတင်ခြင်း
