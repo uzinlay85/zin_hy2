@@ -115,7 +115,7 @@ services:
       - RCLONE_CONFIG_WEBDAV_USER=သင်၏_Koofr_အကောင့်_Email_ကို_ထည့်ပါ
       - RCLONE_CONFIG_WEBDAV_PASS=အဆင့်_၆_မှ_ရရှိလာသော_Obscured_Password_ကို_ဒီမှာထည့်ပါ
     volumes:
-      - ./vw-data:/data/
+      - ./vw-data:/bitwarden/data/
 ```
 ဖိုင်ကို Save လုပ်ရန် `Ctrl + X` ကိုနှိပ်ပါ၊ `Y` ကိုနှိပ်ပါ၊ ထို့နောက် `Enter` ခေါက်ပါ။
 
@@ -275,7 +275,7 @@ services:
       - RCLONE_CONFIG_WEBDAV_USER=$WEBDAV_USER
       - RCLONE_CONFIG_WEBDAV_PASS=$OBSCURED_PASS
     volumes:
-      - ./vw-data:/data/
+      - ./vw-data:/bitwarden/data/
 EOF
 
 # 7. စနစ်အား စတင်ခြင်း
