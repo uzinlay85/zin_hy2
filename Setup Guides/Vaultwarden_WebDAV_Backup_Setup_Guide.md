@@ -95,6 +95,7 @@ services:
     environment:
       - WATCHTOWER_CLEANUP=true
       - WATCHTOWER_POLL_INTERVAL=86400
+      - DOCKER_API_VERSION=1.40
 
   # WebDAV ဖြင့် အလိုအလျောက် Cloud Backup ပြုလုပ်ပေးမည့်စနစ်
   vaultwarden-backup:
@@ -257,6 +258,7 @@ services:
     environment:
       - WATCHTOWER_CLEANUP=true
       - WATCHTOWER_POLL_INTERVAL=86400
+      - DOCKER_API_VERSION=1.40
 
   vaultwarden-backup:
     image: ttionya/vaultwarden-backup:latest
