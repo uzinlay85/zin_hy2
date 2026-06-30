@@ -229,7 +229,7 @@ function App() {
         if (res.status === 401 || res.status === 403) return handleLogout();
         if (res.ok) {
           const data = await res.json();
-          const links = data.created.map(u => `hysteria2://${u.username}:${u.password}@${serverDomain}:443/?sni=${serverDomain}&mport=20000-50000&obfs=salamander&obfs-password=ThantAndZinObfsPassword123#${u.username}`);
+          const links = data.created.map(u => `hysteria2://${u.username}:${u.password}@${serverDomain}:443/?sni=${serverDomain}&mport=20000-50000#${u.username}`);
           setBatchLinks(links);
           setUsername('');
           setBatchCount('');
@@ -266,7 +266,7 @@ function App() {
       });
       if (res.status === 401 || res.status === 403) return handleLogout();
       if (res.ok) {
-        const link = `hysteria2://${finalUsername}:${password}@${serverDomain}:443/?sni=${serverDomain}&mport=20000-50000&obfs=salamander&obfs-password=ThantAndZinObfsPassword123#${finalUsername}`;
+        const link = `hysteria2://${finalUsername}:${password}@${serverDomain}:443/?sni=${serverDomain}&mport=20000-50000#${finalUsername}`;
         setNewLink(link);
         setUsername('');
         setPassword(generatePassword());
@@ -738,7 +738,7 @@ function App() {
                       <button 
                         className="btn btn-primary" 
                         style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
-                        onClick={() => handleCopy(`hysteria2://${user.username}:${user.password}@${serverDomain}:443/?sni=${serverDomain}&mport=20000-50000&obfs=salamander&obfs-password=ThantAndZinObfsPassword123#${user.username}`, `link_${user.id}`)}
+                        onClick={() => handleCopy(`hysteria2://${user.username}:${user.password}@${serverDomain}:443/?sni=${serverDomain}&mport=20000-50000#${user.username}`, `link_${user.id}`)}
                       >
                         {copiedId === `link_${user.id}` ? <Check size={14} /> : <Copy size={14} />} Copy Link
                       </button>
