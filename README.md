@@ -391,3 +391,43 @@ sudo rm -f /etc/nginx/sites-available/default
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo systemctl restart nginx
 ```
+
+---
+
+## 🛠️ Common Troubleshooting (အဖြစ်များသော ပြဿနာများနှင့် ဖြေရှင်းနည်းများ)
+
+### ၁။ Port Hopping (20000-50000) စနစ် အလုပ်မလုပ်ခြင်း (Timeout ဖြစ်ခြင်း)
+
+အချို့ VPS Provider များ (ဥပမာ - RackNerd စသည်) ၏ Hypervisor (စက်ကြီး) အဆင့်တွင် UDP Port Scan Protection (DDoS ကာကွယ်ရေးစနစ်) များ ပါဝင်တတ်သဖြင့် UDP Port Hopping သုံးစွဲသောအခါ လှိုင်းများကို အလိုအလျောက် ဖြတ်တောက်ပစ်တတ်ပါသည်။ ၎င်း VPS များတွင် Port Hopping မသုံးဘဲ Port 443 တိုက်ရိုက်သာ အသုံးပြုလိုပါက အောက်ပါအတိုင်း ဖြေရှင်းနိုင်ပါသည် -
+
+**ဆာဗာ (VPS) ဘက်တွင် ပြင်ဆင်ရန် -**
+
+၁။ Port Hopping လမ်းလွှဲစနစ် (NAT Rules) ကို ပြန်လည်ဖျက်ထုတ်ပါ -
+```bash
+sudo iptables -t nat -D PREROUTING -p udp --dport 20000:50000 -m conntrack ! --ctstate ESTABLISHED,RELATED -j REDIRECT --to-ports 443 2>/dev/null
+sudo iptables -t nat -D PREROUTING -p udp --dport 20000:50000 -j DNAT --to-destination :443 2>/dev/null
+sudo iptables -t nat -D PREROUTING -p udp --dport 20000:50000 -j REDIRECT --to-ports 443 2>/dev/null
+```
+
+၂။ Firewall (`before.rules`) ဖိုင်ကို ဖွင့်ပါ -
+```bash
+sudo nano /etc/ufw/before.rules
+```
+ဖိုင်၏ အောက်ဆုံးသို့ဆင်းပြီး ကျွန်ုပ်တို့ ယခင်က ထည့်သွင်းခဲ့သော `*nat` မှ `COMMIT` အထိ block တစ်ခုလုံးကို ဖျက်ပစ်ပါ (မူလ filter block များကို လုံးဝမဖျက်မိရန် သတိပြုပါ)။ ပြီးလျှင် Save လုပ်ပြီး Firewall အား Reload လုပ်ပါ -
+```bash
+sudo ufw reload
+```
+
+၃။ Panel မှ ထုတ်သမျှ Key များတွင် Port Hopping မပါဘဲ Port 443 သီးသန့် အလိုအလျောက် ထွက်လာစေရန် Web UI ကုဒ်အား VPS ပေါ်တွင် တိုက်ရိုက်ပြင်ဆင်ပါ -
+```bash
+# Web UI ကုဒ်ထဲမှ Port Hopping စာသား (&mport=20000-50000) ကို ဖယ်ရှားပါမည်
+python3 -c "import pathlib, os; p = pathlib.Path(os.path.expanduser('~/zin_hy2/frontend/src/App.jsx')); p.write_text(p.read_text().replace('&mport=20000-50000', ''))"
+
+# ပြောင်းလဲမှုများ သက်ရောက်စေရန် အသစ်ပြန်လည် Build လုပ်ပါမည်
+cd ~/zin_hy2/frontend && npm run build
+
+# Web UI Panel အား Restart ချပါမည်
+pm2 restart hysteria-ui
+```
+*(ယခုဆိုလျှင် Panel မှ ကူးယူသော ကီးများအားလုံးသည် Port 443 တိုက်ရိုက်အဖြစ် သန့်သန့်လေး ထွက်လာမည်ဖြစ်သည်)*။
+
