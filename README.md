@@ -164,7 +164,7 @@ if ! grep -q "20000:50000" /etc/ufw/before.rules; then
 
 *nat
 :PREROUTING ACCEPT [0:0]
--A PREROUTING -p udp --dport 20000:50000 -j REDIRECT --to-ports 443
+-A PREROUTING -p udp --dport 20000:50000 -m conntrack ! --ctstate ESTABLISHED,RELATED -j REDIRECT --to-ports 443
 COMMIT
 EOF'
     sudo ufw reload
