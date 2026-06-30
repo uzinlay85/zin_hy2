@@ -154,16 +154,16 @@ sudo ufw allow 20000:50000/udp
 
 **Port Hopping လမ်းကြောင်းများ ဖန်တီးခြင်း -**
 ```bash
-sudo bash -c 'cat << "EOF" >> /etc/ufw/before.rules
+if ! grep -q "20000:50000" /etc/ufw/before.rules; then
+    sudo bash -c 'cat << "EOF" >> /etc/ufw/before.rules
 
 *nat
 :PREROUTING ACCEPT [0:0]
 -A PREROUTING -p udp --dport 20000:50000 -j REDIRECT --to-ports 443
 COMMIT
 EOF'
-```
-```bash
-sudo ufw reload
+    sudo ufw reload
+fi
 sudo systemctl restart docker
 ```
 *(မှတ်ချက် - UFW Reload လုပ်ပြီးတိုင်း Amnezia အတွက် Docker ပါ မပျက်မကွက် Restart ချပေးပါ)*

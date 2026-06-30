@@ -159,15 +159,17 @@ You can easily append them by running this command:
 (Port Hopping သုံးရန်အတွက် UFW Rule ဖိုင်ထဲသို့ အောက်ပါ Command ဖြင့် အလိုအလျောက် ထည့်သွင်းပါ)
 
 ```bash
-sudo bash -c 'cat << "EOF" >> /etc/ufw/before.rules
+if ! grep -q "20000:50000" /etc/ufw/before.rules; then
+    sudo bash -c 'cat << "EOF" >> /etc/ufw/before.rules
 
 *nat
 :PREROUTING ACCEPT [0:0]
 -A PREROUTING -p udp --dport 20000:50000 -j REDIRECT --to-ports 443
 COMMIT
 EOF'
+    sudo ufw reload
+fi
 ```
-*Reload UFW: `sudo ufw reload`*
 
 ### 7. Clone Repository & Install Dependencies / Code များရယူခြင်း
 (Code များကို Github မှ ဆွဲယူ၍ လိုအပ်သည်များ သွင်းပါမည်)
