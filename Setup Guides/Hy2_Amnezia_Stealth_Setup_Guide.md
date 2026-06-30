@@ -174,8 +174,16 @@ sudo systemctl restart docker
 
 **၁။ Code များ ဆွဲယူခြင်း နှင့် Permission ပေးခြင်း**
 ```bash
+# Home directory သို့ အရင်သွားပါမည်
+cd ~
+
+# သန့်ရှင်းသော တပ်ဆင်မှုဖြစ်စေရန် ဖိုင်ဟောင်းရှိပါက ဖျက်ပါမည်
+rm -rf zin_hy2
+
+# Code များ ရယူမည်
 git clone https://github.com/uzinlay85/zin_hy2.git
 
+# Database ဖန်တီးခွင့်ရရန် Permission ပေးပါမည်
 sudo chown -R $USER:$USER ~/zin_hy2
 sudo chmod 777 ~/zin_hy2/backend
 ```

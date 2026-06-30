@@ -172,8 +172,14 @@ fi
 ```
 
 ### 7. Clone Repository & Install Dependencies / Code များရယူခြင်း
-(Code များကို Github မှ ဆွဲယူ၍ လိုအပ်သည်များ သွင်းပါမည်)
 ```bash
+# Home directory သို့ အရင်သွားပါမည်
+cd ~
+
+# သန့်ရှင်းသော တပ်ဆင်မှုဖြစ်စေရန် ဖိုင်ဟောင်းရှိပါက ဖျက်ပါမည်
+rm -rf zin_hy2
+
+# Code များ ရယူမည်
 git clone https://github.com/uzinlay85/zin_hy2.git
 
 # အရေးကြီး - Database ဖန်တီးခွင့်ရရန် Permission အရင်ပေးရပါမည်
