@@ -110,11 +110,20 @@ git clone https://github.com/uzinlay85/zin_hy2.git "$INSTALL_DIR" --quiet
 log "Repository cloned to $INSTALL_DIR"
 
 # ── Step 5: Install dependencies & build frontend (BEFORE chmod) ───
-
 step "5/9  Installing Dependencies & Building Frontend"
-cd "$INSTALL_DIR/backend" && npm install --quiet
-cd "$INSTALL_DIR/frontend" && npm install --quiet && npm run build --quiet
-cd ~
+
+[[ -d "$INSTALL_DIR/backend" ]] || fail "Backend directory not found: $INSTALL_DIR/backend"
+[[ -d "$INSTALL_DIR/frontend" ]] || fail "Frontend directory not found: $INSTALL_DIR/frontend"
+
+pushd "$INSTALL_DIR/backend" > /dev/null
+npm install --quiet
+popd > /dev/null
+
+pushd "$INSTALL_DIR/frontend" > /dev/null
+npm install --quiet
+npm run build --quiet
+popd > /dev/null
+
 log "Backend and Frontend ready"
 
 # ── Step 6: Set permissions (AFTER npm install so nothing is blocked) ──
