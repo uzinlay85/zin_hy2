@@ -1,0 +1,12 @@
+# Ensure shell scripts always use LF line endings on all platforms
+*.sh text eol=lf
+
+# Markdown and text files
+*.md text eol=lf
+
+# JS/JSX/JSON use auto
+*.js text=auto
+*.jsx text=auto
+*.json text=auto
+*.css text=auto
+*.html text=auto
