@@ -60,8 +60,17 @@ CONFIRM="${CONFIRM:-Y}"
 [[ "$CONFIRM" =~ ^[Yy]$ ]] || { info "Cancelled."; exit 0; }
 
 # ── Variables ─────────────────────────────────────────────────
-INSTALL_DIR="$HOME/zin_hy2"
-APP_USER="${SUDO_USER:-$(logname 2>/dev/null || echo root)}"
+# INSTALL_DIR set above based on APP_USER
+# Determine the real (non-root) user who invoked this script
+if [[ -n "$SUDO_USER" ]]; then
+  APP_USER="$SUDO_USER"
+  APP_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+else
+  # Running directly as root (ssh root@server)
+  APP_USER="root"
+  APP_HOME="/root"
+fi
+INSTALL_DIR="$APP_HOME/zin_hy2"
 
 # ── Step 1: System packages ───────────────────────────────────
 step "1/9  Installing System Packages"
@@ -100,20 +109,23 @@ fi
 git clone https://github.com/uzinlay85/zin_hy2.git "$INSTALL_DIR" --quiet
 log "Repository cloned to $INSTALL_DIR"
 
-# ── Step 5: Set permissions ───────────────────────────────────
-step "5/9  Setting Permissions"
-chown -R "$APP_USER:$APP_USER" "$INSTALL_DIR"
-chmod 750 "$INSTALL_DIR/backend"
-log "Permissions set (750 for backend)"
+# ── Step 5: Install dependencies & build frontend (BEFORE chmod) ───
 
-# ── Step 6: Install dependencies & build frontend ─────────────
-step "6/9  Installing Dependencies & Building Frontend"
-su -c "cd '$INSTALL_DIR/backend' && npm install --quiet" "$APP_USER"
-su -c "cd '$INSTALL_DIR/frontend' && npm install --quiet && npm run build --quiet" "$APP_USER"
+step "5/9  Installing Dependencies & Building Frontend"
+cd "$INSTALL_DIR/backend" && npm install --quiet
+cd "$INSTALL_DIR/frontend" && npm install --quiet && npm run build --quiet
+cd ~
 log "Backend and Frontend ready"
 
-# ── Step 7: Hysteria 2 ────────────────────────────────────────
-step "7/9  Installing Hysteria 2"
+# ── Step 6: Set permissions (AFTER npm install so nothing is blocked) ──
+step "6/8  Fixing Permissions"
+chown -R "$APP_USER:$APP_USER" "$INSTALL_DIR"
+chmod 750 "$INSTALL_DIR/backend"
+[[ -f "$INSTALL_DIR/backend/hysteria.db" ]] && chmod 640 "$INSTALL_DIR/backend/hysteria.db"
+log "Permissions set (750 backend, 640 database)"
+
+# ── Step 7: Hysteria 2 ──────────────────────────────────────────────
+step "7/8  Installing Hysteria 2"
 if ! command -v hysteria &>/dev/null; then
   bash <(curl -fsSL https://get.hy2.sh/) &>/dev/null
   log "Hysteria 2 installed: $(hysteria version 2>&1 | head -1)"
@@ -209,18 +221,22 @@ log "Firewall configured"
 
 # ── Start Web UI ──────────────────────────────────────────────
 step "Starting Web UI with PM2"
-su -c "cd '$INSTALL_DIR/backend' && pm2 start server.js --name hysteria-ui" "$APP_USER"
-su -c "pm2 save" "$APP_USER"
-# Setup PM2 startup
-PM2_STARTUP=$(su -c "pm2 startup systemd -u $APP_USER --hp $HOME 2>&1 | tail -1" "$APP_USER" 2>/dev/null || true)
-if [[ "$PM2_STARTUP" == sudo* ]]; then
-  eval "$PM2_STARTUP" &>/dev/null || true
+cd "$INSTALL_DIR/backend"
+pm2 start server.js --name hysteria-ui
+pm2 save --force
+
+# Setup PM2 startup (auto-start on reboot)
+if [[ "$APP_USER" == "root" ]]; then
+  pm2 startup systemd -u root --hp /root &>/dev/null || true
+else
+  PM2_STARTUP=$(pm2 startup systemd -u "$APP_USER" --hp "$APP_HOME" 2>&1 | grep '^sudo')
+  [[ -n "$PM2_STARTUP" ]] && eval "$PM2_STARTUP" &>/dev/null || true
 fi
-su -c "pm2 save" "$APP_USER"
+pm2 save --force
 log "PM2 started and configured for auto-restart"
 
 sleep 2
-su -c "pm2 restart hysteria-ui" "$APP_USER"
+pm2 restart hysteria-ui
 
 # ── Show result ───────────────────────────────────────────────
 echo ""
