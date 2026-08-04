@@ -100,12 +100,23 @@ log "UDP buffer sizes configured"
 
 # ── Step 4: Clone / update repo ───────────────────────────────
 step "4/9  Cloning Repository"
+
+# Stop any running PM2 process before removing
+pm2 stop hysteria-ui 2>/dev/null || true
+pm2 delete hysteria-ui 2>/dev/null || true
+
+# Clean up target install dir
 if [[ -d "$INSTALL_DIR" ]]; then
   warn "Existing install found at $INSTALL_DIR — removing and re-cloning..."
-  pm2 stop hysteria-ui 2>/dev/null || true
-  pm2 delete hysteria-ui 2>/dev/null || true
   rm -rf "$INSTALL_DIR"
 fi
+
+# If installing to a non-root home (sudo user), also clean up any stale /root/zin_hy2
+if [[ "$INSTALL_DIR" != "/root/zin_hy2" && -d "/root/zin_hy2" ]]; then
+  warn "Removing stale /root/zin_hy2 (no node_modules, not the active install)..."
+  rm -rf /root/zin_hy2
+fi
+
 git clone https://github.com/uzinlay85/zin_hy2.git "$INSTALL_DIR" --quiet
 log "Repository cloned to $INSTALL_DIR"
 
