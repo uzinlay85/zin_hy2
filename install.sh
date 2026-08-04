@@ -127,14 +127,14 @@ popd > /dev/null
 log "Backend and Frontend ready"
 
 # ── Step 6: Set permissions (AFTER npm install so nothing is blocked) ──
-step "6/8  Fixing Permissions"
+step "6/9  Fixing Permissions"
 chown -R "$APP_USER:$APP_USER" "$INSTALL_DIR"
 chmod 750 "$INSTALL_DIR/backend"
 [[ -f "$INSTALL_DIR/backend/hysteria.db" ]] && chmod 640 "$INSTALL_DIR/backend/hysteria.db"
 log "Permissions set (750 backend, 640 database)"
 
 # ── Step 7: Hysteria 2 ──────────────────────────────────────────────
-step "7/8  Installing Hysteria 2"
+step "7/9  Installing Hysteria 2"
 if ! command -v hysteria &>/dev/null; then
   bash <(curl -fsSL https://get.hy2.sh/) &>/dev/null
   log "Hysteria 2 installed: $(hysteria version 2>&1 | head -1)"
@@ -230,22 +230,26 @@ log "Firewall configured"
 
 # ── Start Web UI ──────────────────────────────────────────────
 step "Starting Web UI with PM2"
-cd "$INSTALL_DIR/backend"
+pushd "$INSTALL_DIR/backend" > /dev/null
 pm2 start server.js --name hysteria-ui
 pm2 save --force
 
-# Setup PM2 startup (auto-start on reboot)
+# Setup PM2 startup (auto-start on reboot) — wrap entirely in || true so set -e won't kill the script
 if [[ "$APP_USER" == "root" ]]; then
   pm2 startup systemd -u root --hp /root &>/dev/null || true
 else
-  PM2_STARTUP=$(pm2 startup systemd -u "$APP_USER" --hp "$APP_HOME" 2>&1 | grep '^sudo')
-  [[ -n "$PM2_STARTUP" ]] && eval "$PM2_STARTUP" &>/dev/null || true
+  # Run as root (we are root), generate startup for the real user
+  PM2_STARTUP=$(pm2 startup systemd -u "$APP_USER" --hp "$APP_HOME" 2>&1 | grep '^sudo' || true)
+  if [[ -n "$PM2_STARTUP" ]]; then
+    eval "$PM2_STARTUP" &>/dev/null || true
+  fi
 fi
-pm2 save --force
+pm2 save --force || true
 log "PM2 started and configured for auto-restart"
 
 sleep 2
-pm2 restart hysteria-ui
+pm2 restart hysteria-ui &>/dev/null || true
+popd > /dev/null
 
 # ── Show result ───────────────────────────────────────────────
 echo ""
@@ -255,9 +259,10 @@ echo "  ║        ✓ Installation Complete!          ║"
 echo "  ╚══════════════════════════════════════════╝"
 echo -e "${NC}"
 
-echo -e "  To get your ${BOLD}Secret Admin URL${NC}, run:"
-echo -e "  ${CYAN}cd ~/zin_hy2 && bash show_url.sh${NC}"
+echo -e "  ${BOLD}Your Secret Admin URL:${NC}"
+bash "$INSTALL_DIR/show_url.sh" 2>/dev/null || \
+  echo -e "  ${CYAN}Run: cd ~/zin_hy2 && bash show_url.sh${NC}"
 echo ""
 echo -e "  Default login:  ${BOLD}admin / admin${NC}"
-echo -e "  ${YELLOW}Please change your password immediately after login!${NC}"
+echo -e "  ${YELLOW}⚠ Please change your password immediately after login!${NC}"
 echo ""
