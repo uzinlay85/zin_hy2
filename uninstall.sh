@@ -26,41 +26,41 @@ read -p "  Type 'yes' to confirm uninstall: " CONFIRM
 [[ "$CONFIRM" == "yes" ]] || { info "Uninstall cancelled."; exit 0; }
 
 echo ""
+echo -e "${YELLOW}🧹 စနစ်ဟောင်းများကို အရှင်းဖျက်နေပါသည်...${NC}"
 
-INSTALL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# ── ၁။ PM2 (Backend) ကို ရပ်တန့်ပြီး ဖျက်ပစ်ခြင်း ────────────
+step "1/4  Stopping & Removing Web UI (PM2)"
+pm2 stop hysteria-ui 2>/dev/null || true
+pm2 delete hysteria-ui 2>/dev/null || true
+pm2 save --force 2>/dev/null || true
+log "PM2 process stopped and removed"
 
-# ── Step 1: Stop & remove Web UI ──────────────────────────────
-step "1/4  Removing Web UI (PM2)"
-pm2 stop hysteria-ui 2>/dev/null && log "PM2 process stopped" || warn "PM2 process not found"
-pm2 delete hysteria-ui 2>/dev/null && log "PM2 process deleted" || true
-pm2 save 2>/dev/null || true
+# ── ၂။ Hysteria 2 Server ကို ရပ်တန့်ပြီး ဖျက်ပစ်ခြင်း ─────────
+step "2/4  Removing Hysteria 2 Server"
+sudo systemctl stop hysteria-server 2>/dev/null || true
+sudo systemctl disable hysteria-server 2>/dev/null || true
+sudo rm -rf /etc/hysteria
+sudo rm -f /usr/local/bin/hysteria
+sudo rm -f /etc/systemd/system/hysteria-server.service
+sudo rm -f /etc/systemd/system/hysteria-server@.service
+sudo systemctl daemon-reload
+log "Hysteria 2 server removed"
 
-# ── Step 2: Remove files ──────────────────────────────────────
-step "2/4  Removing Web UI Files"
-if [[ -d "$INSTALL_DIR" && "$INSTALL_DIR" != "/" ]]; then
-  rm -rf "$INSTALL_DIR"
-  log "Removed $INSTALL_DIR"
-fi
+# ── ၃။ Nginx Configuration များကို ဖျက်ပစ်ခြင်း ──────────────
+step "3/4  Removing Nginx Configuration"
+sudo rm -f /etc/nginx/sites-available/zin_hy2
+sudo rm -f /etc/nginx/sites-enabled/zin_hy2
+sudo systemctl restart nginx 2>/dev/null && log "Nginx restarted" || warn "Could not restart Nginx"
 
-# ── Step 3: Remove Hysteria 2 ─────────────────────────────────
-step "3/4  Removing Hysteria 2 Server"
-systemctl stop hysteria-server 2>/dev/null && log "Hysteria 2 stopped" || warn "Hysteria 2 was not running"
-systemctl disable hysteria-server 2>/dev/null && log "Hysteria 2 disabled" || true
-rm -f /etc/systemd/system/hysteria-server.service
-rm -rf /etc/hysteria
-rm -f /usr/local/bin/hysteria
-systemctl daemon-reload
-log "Hysteria 2 removed"
-
-# ── Step 4: Remove Nginx config ───────────────────────────────
-step "4/4  Removing Nginx Configuration"
-rm -f /etc/nginx/sites-available/zin_hy2
-rm -f /etc/nginx/sites-enabled/zin_hy2
-systemctl restart nginx 2>/dev/null && log "Nginx restarted" || warn "Could not restart Nginx"
+# ── ၄။ Project Folder ကြီးတစ်ခုလုံးကို အရှင်းဖျက်ပစ်ခြင်း ─────
+step "4/4  Removing Project Files"
+cd ~
+sudo rm -rf ~/zin_hy2
+log "Project folder removed"
 
 # ── Done ──────────────────────────────────────────────────────
 echo ""
-echo -e "${BOLD}${GREEN}  ✓ Uninstall complete!${NC}"
+echo -e "${BOLD}${GREEN}✅ အားလုံး အစအနမကျန် အရှင်းလင်းသွားပါပြီ!${NC}"
 echo ""
 info "Note: Node.js, PM2, Nginx, Certbot, UFW, and SSL certificates were kept."
 info "To remove SSL certs: sudo certbot delete"
