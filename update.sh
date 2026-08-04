@@ -56,7 +56,23 @@ log "Frontend rebuilt"
 
 # ── Step 5: Restart services ──────────────────────────────────
 step "5/5  Restarting Services"
-pm2 restart hysteria-ui 2>/dev/null || sudo pm2 restart hysteria-ui
+
+# Check if PM2 is running from the correct directory
+PM2_CWD=$(pm2 info hysteria-ui 2>/dev/null | grep "exec cwd" | awk '{print $NF}' || true)
+if [[ -n "$PM2_CWD" && "$PM2_CWD" != "$INSTALL_DIR/backend" ]]; then
+  warn "PM2 was running from wrong directory ($PM2_CWD) — restarting from correct path"
+  pm2 delete hysteria-ui 2>/dev/null || true
+  pushd "$INSTALL_DIR/backend" > /dev/null
+  pm2 start server.js --name hysteria-ui
+  pm2 save --force
+  popd > /dev/null
+else
+  pushd "$INSTALL_DIR/backend" > /dev/null
+  pm2 restart hysteria-ui 2>/dev/null || pm2 start server.js --name hysteria-ui
+  pm2 save --force
+  popd > /dev/null
+fi
+
 systemctl restart nginx 2>/dev/null || sudo systemctl restart nginx
 log "Services restarted"
 
